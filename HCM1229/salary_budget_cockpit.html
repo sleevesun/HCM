@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工薪预算驾驶舱 - HCM</title>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- CSS Variables (Consistent with HCM.html) --- */
+        :root {
+            /* Colors */
+            --primary-color: #0052D9;
+            --primary-hover: #003CAB;
+            --success-color: rgb(0, 128, 0);
+            --danger-color: rgb(255, 0, 0);
+            --neutral-color: rgb(128, 128, 128);
+            --warning-color: #E37318;
+            --text-main: #1D2129;
+            --text-secondary: #4E5969;
+            --text-placeholder: #86909C;
+            --bg-body: #F0F2F5;
+            --bg-white: #FFFFFF;
+            --border-color: #E5E6EB;
+            --border-color-dark: #C9CDD4;
+
+            /* Dimensions */
+            --header-height: 56px;
+            --content-padding: 24px;
+
+            /* Typography */
+            --font-family: "Microsoft YaHei", "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* --- Global Reset & Base Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+            font-size: 14px;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* --- Watermark --- */
+        .watermark {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><text x="50%" y="50%" font-family="sans-serif" font-size="20" fill="rgba(0,0,0,0.04)" transform="rotate(-45 150 150)" text-anchor="middle">用户 2026-01-05</text></svg>');
+        }
+
+        /* --- Header --- */
+        .top-nav {
+            height: var(--header-height);
+            background-color: var(--primary-color);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left,
+        .nav-right,
+        .nav-menu,
+        .nav-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-left {
+            height: 100%;
+        }
+
+        .nav-menu {
+            height: 100%;
+            margin-left: 40px;
+        }
+
+        /* Added margin to separate logo */
+
+        .logo {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            opacity: 0.95;
+        }
+
+        .logo i {
+            margin-right: 8px;
+            font-size: 20px;
+        }
+
+        .nav-item {
+            padding: 0 20px;
+            height: 100%;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            opacity: 0.8;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            opacity: 1;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item i {
+            margin-right: 8px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 24px;
+            height: 24px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            font-size: 12px;
+        }
+
+        /* --- Main Layout --- */
+        .main-container {
+            padding: var(--content-padding);
+            padding-top: 16px;
+            /* Reduced top padding */
+            max-width: 100%;
+            min-width: 1400px;
+            /* Ensure enough width for dashboard */
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+        }
+
+        .page-title i {
+            margin-right: 12px;
+            color: var(--primary-color);
+        }
+
+        .link-btn {
+            color: var(--primary-color);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .link-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* --- Sections --- */
+        .section-card {
+            background: var(--bg-white);
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title span {
+            margin-left: 8px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* --- Tables --- */
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            height: 40px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #F7F8FA;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+        }
+
+        td {
+            color: var(--text-main);
+            background: #fff;
+        }
+
+        tr:hover td {
+            background-color: #FBFBFC;
+        }
+
+        .cell-left {
+            text-align: left;
+        }
+
+        .cell-right {
+            text-align: right;
+            font-family: "DIN Alternate", sans-serif;
+        }
+
+        .cell-center {
+            text-align: center;
+        }
+
+        .text-bold {
+            font-weight: 600;
+        }
+
+        .text-green {
+            color: var(--success-color);
+        }
+
+        .text-red {
+            color: var(--danger-color);
+        }
+
+        .text-orange {
+            color: var(--warning-color);
+        }
+
+        .text-blue {
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .text-gray {
+            color: var(--neutral-color);
+        }
+
+        /* Tree Table Specifics */
+        .tree-row {}
+
+        .tree-cell {
+            display: flex;
+            align-items: center;
+        }
+
+        .tree-toggle {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 4px;
+            color: var(--text-secondary);
+            transition: transform 0.2s;
+        }
+
+        .tree-toggle:hover {
+            color: var(--primary-color);
+        }
+
+        .tree-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .tree-toggle.invisible {
+            visibility: hidden;
+        }
+
+        .icon-btn {
+            color: var(--primary-color);
+            cursor: pointer;
+            margin: 0 4px;
+            font-size: 14px;
+        }
+
+        /* Layout for Top Cards (Mocked as a table for now as per image 'row' look) */
+        .top-table th {
+            background: #fafafa;
+        }
+
+        /* Layout for Bottom Grid */
+        /* We need a complex header */
+        .complex-header th {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        /* Adjustment for "Year Plan" headers */
+        .year-header {
+            background-color: #F2F3F5;
+            /* Slightly darker to distinguish years maybe? Or just border */
+        }
+
+        .header-blue-light {
+            background-color: #e6f7ff;
+        }
+
+        /* Optional for visual distinction */
+
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-container {
+            background-color: #fff;
+            width: 90%;
+            max-width: 1400px;
+            max-height: 90vh;
+            /* Allow scrolling content */
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #fff;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+            background-color: #fff;
+        }
+
+        /* Modal Filter Row */
+        .filter-row {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-label {
+            margin-right: 8px;
+            font-weight: 600;
+        }
+
+        .c-input,
+        .c-select {
+            height: 32px;
+            border: 1px solid var(--border-color);
+            border-radius: 2px;
+            padding: 0 8px;
+            font-size: 13px;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .c-input {
+            width: 240px;
+            background: #F7F8FA;
+        }
+
+        .c-select {
+            width: 100px;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .btn-white {
+            height: 32px;
+            padding: 0 16px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            color: var(--text-main);
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-white:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* Modal Table */
+        .modal-table th {
+            font-weight: normal;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .modal-table thead tr:first-child th {
+            font-weight: 600;
+            color: var(--text-main);
+            background-color: #F7F8FA;
+        }
+
+        .row-group-header td {
+            font-weight: 600;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="watermark"></div>
+
+    <!-- Header -->
+    <nav class="top-nav">
+        <div class="nav-left">
+            <div class="logo">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>HCM</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <i class="fa-solid fa-sitemap"></i>
+                    组织树
+                </li>
+                <li class="nav-item">
+                    <i class="fa-solid fa-chart-simple"></i>
+                    报表中心
+                </li>
+                <li class="nav-item active">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    编制管理
+                </li>
+            </ul>
+        </div>
+        <div class="nav-right">
+            <div class="user-profile">
+                <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <span>用户</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <main class="main-container">
+
+        <!-- Page Title -->
+        <div class="page-header">
+            <div class="page-title">
+                <i class="fa-solid fa-table-cells-large"></i>
+                工薪预算驾驶舱
+            </div>
+            <div class="link-btn">操作手册</div>
+        </div>
+
+        <!-- Section 1: Pending Applications -->
+        <div class="section-card">
+            <div class="section-title">
+                在途调整/编制申请 <span>(2)</span>
+                <i class="fa-solid fa-arrow-up-right-from-square"
+                    style="margin-left: auto; font-size: 14px; color: var(--text-secondary); cursor: pointer;"></i>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="top-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width: 120px;">申请类型</th>
+                            <th rowspan="2" style="width: 150px;">申请部门</th>
+                            <th colspan="5">HC</th>
+                            <th colspan="3">月度工薪预算 (万)</th>
+                            <th colspan="3">年度工薪预算 (万)</th>
+                            <th rowspan="2" style="width: 120px;">操作</th>
+                        </tr>
+                        <tr>
+                            <!-- HC -->
+                            <th>申请前<br><span style="font-weight:400; font-size:11px;">正编 | 其他人员</span></th>
+                            <th>申请通过后<br><span style="font-weight:400; font-size:11px;">正编 | 其他人员</span></th>
+                            <th>变化<br><span style="font-weight:400; font-size:11px;">正编 | 其他人员</span></th>
+
+                            <!-- Month -->
+                            <th>申请前</th>
+                            <th>申请通过后</th>
+                            <th>变化</th>
+
+                            <!-- Year -->
+                            <th>申请前</th>
+                            <th>申请通过后</th>
+                            <th>变化</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Mock Row 1 -->
+                        <tr>
+                            <td rowspan="3" class="cell-center text-bold">2025年预算调整</td>
+                            <td class="text-bold">远景工作室</td>
+                            <td class="cell-center">50 | 9</td>
+                            <td class="cell-center">54 | 10</td>
+                            <td class="cell-center"><span class="text-red">+4</span> | <span class="text-red">+1</span>
+                            </td>
+
+                            <td class="cell-right">200.0</td>
+                            <td class="cell-right">209.5</td>
+                            <td class="cell-right text-red">+9.5</td>
+
+                            <td class="cell-right">2400.0</td>
+                            <td class="cell-right">2508.6</td>
+                            <td class="cell-right text-red">+108.6</td>
+
+                            <td rowspan="3" class="cell-center">
+                                <span class="text-blue" style="margin-right:8px;">去提交</span>
+                                <span class="text-red">删除</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>支撑部</td>
+                            <td class="cell-center">17 | 2</td>
+                            <td class="cell-center">19 | 3</td>
+                            <td class="cell-center"><span class="text-red">+2</span> | <span class="text-red">+1</span>
+                            </td>
+                            <td class="cell-right">61.8</td>
+                            <td class="cell-right">66.1</td>
+                            <td class="cell-right text-red">+4.3</td>
+                            <td class="cell-right">741.8</td>
+                            <td class="cell-right">793.4</td>
+                            <td class="cell-right text-red">+51.6</td>
+                        </tr>
+                        <tr>
+                            <td>增长部</td>
+                            <td class="cell-center">20 | 2</td>
+                            <td class="cell-center">22 | 2</td>
+                            <td class="cell-center"><span class="text-red">+2</span> | 0</td>
+                            <td class="cell-right">64.2</td>
+                            <td class="cell-right">69.4</td>
+                            <td class="cell-right text-red">+5.2</td>
+                            <td class="cell-right">770.4</td>
+                            <td class="cell-right">827.4</td>
+                            <td class="cell-right text-red">+57.0</td>
+                        </tr>
+
+                        <!-- Mock Row 2 -->
+                        <tr style="border-top: 2px solid var(--border-color);">
+                            <td rowspan="4" class="cell-center text-bold">2026年预算编制</td>
+                            <td class="text-bold">XX工作室</td>
+                            <td class="cell-center">108 | 56</td>
+                            <td class="cell-center">83 | 70</td>
+                            <td class="cell-center"><span class="text-green">-25</span> | <span
+                                    class="text-red">+14</span></td>
+
+                            <td class="cell-right">216.6</td>
+                            <td class="cell-right">166.5</td>
+                            <td class="cell-right text-green">-50.1</td>
+
+                            <td class="cell-right">2599.3</td>
+                            <td class="cell-right">2313.1</td>
+                            <td class="cell-right text-green">-286.3</td>
+
+                            <td rowspan="4" class="cell-center">
+                                <span class="text-blue" style="margin-right:8px;">修改</span>
+                                <span class="text-red">删除</span><br>
+                                <span class="text-orange" style="font-size:12px;">审批中</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>部门2</td>
+                            <td class="cell-center">35 | 26</td>
+                            <td class="cell-center">26 | 30</td>
+                            <td class="cell-center"><span class="text-green">-9</span> | <span
+                                    class="text-red">+4</span></td>
+                            <td class="cell-right">67.1</td>
+                            <td class="cell-right">49.9</td>
+                            <td class="cell-right text-green">-17.3</td>
+                            <td class="cell-right">805.5</td>
+                            <td class="cell-right">753.7</td>
+                            <td class="cell-right text-green">-51.8</td>
+                        </tr>
+                        <tr>
+                            <td>部门3</td>
+                            <td class="cell-center">15 | 15</td>
+                            <td class="cell-center">13 | 20</td>
+                            <td class="cell-center"><span class="text-green">-2</span> | <span
+                                    class="text-red">+5</span></td>
+                            <td class="cell-right">29.7</td>
+                            <td class="cell-right">25.7</td>
+                            <td class="cell-right text-green">-4.0</td>
+                            <td class="cell-right">356.3</td>
+                            <td class="cell-right">336.5</td>
+                            <td class="cell-right text-green">-19.8</td>
+                        </tr>
+                        <tr>
+                            <td>部门4</td>
+                            <td class="cell-center">41 | 15</td>
+                            <td class="cell-center">31 | 20</td>
+                            <td class="cell-center"><span class="text-green">-10</span> | <span
+                                    class="text-red">+5</span></td>
+                            <td class="cell-right">84.5</td>
+                            <td class="cell-right">63.9</td>
+                            <td class="cell-right text-green">-20.6</td>
+                            <td class="cell-right">1,014.1</td>
+                            <td class="cell-right">849.2</td>
+                            <td class="cell-right text-green">-164.9</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section 2: Current Salary Execution & Planning -->
+        <div class="section-card" style="padding: 0; padding-bottom: 20px;">
+            <div style="padding: 20px; font-weight: 700; font-size: 16px;">当前工薪执行现状及现行规划</div>
+
+            <div class="table-wrapper" style="border: none; border-top: 1px solid var(--border-color);">
+                <table class="data-table" id="main-table">
+                    <thead>
+                        <tr class="complex-header">
+                            <th rowspan="3" style="width: 200px; text-align: left; padding-left: 20px;">部门</th>
+                            <th rowspan="3" style="width: 60px;">预算<br>调整</th>
+
+                            <!-- 2026 Header -->
+                            <th colspan="13"
+                                style="background-color: #f7f9fc; border-right: 2px solid var(--border-color-dark);">
+                                2026年</th>
+
+                            <!-- 2027 Header -->
+                            <th colspan="7" style="background-color: #eef6ff;">2027年</th>
+                        </tr>
+                        <tr class="complex-header">
+                            <!-- 2026 Sub-headers -->
+                            <!-- HC -->
+                            <th colspan="5">HC</th>
+                            <th colspan="5">年末目标</th>
+                            <!-- Cost -->
+                            <th colspan="3">工薪成本 (万)</th>
+
+                            <!-- 2027 Sub-headers -->
+                            <th rowspan="2" style="width: 60px; background-color: #eef6ff;">预算<br>编制</th>
+                            <th colspan="6" style="background-color: #eef6ff;">年初计划</th>
+                        </tr>
+                        <tr class="complex-header">
+                            <!-- 2026 HC Current -->
+                            <th>正编</th>
+                            <th>实习</th>
+                            <th>劳务派遣</th>
+                            <th>人力外包</th>
+                            <th>兼职</th>
+                            <!-- 2026 HC Target -->
+                            <th>正编</th>
+                            <th>实习</th>
+                            <th>劳务派遣</th>
+                            <th>人力外包</th>
+                            <th>兼职</th>
+
+                            <!-- 2026 Cost -->
+                            <th>累计已发生</th>
+                            <th>全年预算</th>
+                            <th>预实比对</th>
+
+                            <!-- 2027 (Plan) -->
+                            <!-- 2027 HC Plan -->
+                            <th style="background-color: #eef6ff;">正编</th>
+                            <th style="background-color: #eef6ff;">实习</th>
+                            <th style="background-color: #eef6ff;">劳务派遣</th>
+                            <th style="background-color: #eef6ff;">人力外包</th>
+                            <th style="background-color: #eef6ff;">兼职</th>
+                            <th style="background-color: #eef6ff;">...</th>
+                            <!-- Truncated/Simplified for 2027 as per image reference if possible, 
+                                 but prompt says "Complete reproduction". 
+                                 The image likely shows 2027 structure similar to 2026 but maybe less columns visible?
+                                 I'll stick to a symmetric structure or whatever fits 2027. 
+                                 For now, I'll match 2026's HC structure for 2027.
+                            -->
+                        </tr>
+                    </thead>
+                    <tbody id="dept-tree-body">
+                        <!-- JS Generated -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Structure -->
+    <div class="modal-overlay" id="comparison-modal">
+        <div class="modal-container">
+            <!-- Header / Filters -->
+            <div class="modal-header">
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <span class="filter-label">部门</span>
+                        <input type="text" class="c-input" value="游戏业务/游戏工作室群/远景工作室" readonly>
+                    </div>
+                    <div class="filter-item">
+                        <span class="filter-label">年份</span>
+                        <input type="text" class="c-input" style="width: 80px;" value="2026年" readonly>
+                    </div>
+                    <div class="filter-item">
+                        <span class="filter-label">员工类型</span>
+                        <div class="c-select"
+                            style="display:flex; align-items:center; justify-content:space-between; width: 80px;">
+                            全部 <i class="fa-solid fa-circle-xmark" style="color: #ccc; font-size: 12px;"></i>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                        <span class="filter-label">数据类型</span>
+                        <select class="c-select" id="dataTypeSelect" onchange="toggleDataType()">
+                            <option value="hc">HC数</option>
+                            <option value="budget">预算</option>
+                        </select>
+                    </div>
+                    <div class="filter-item" id="budgetRadios" style="display: none;">
+                        <label style="margin-right: 12px; cursor: pointer;">
+                            <input type="radio" name="budgetType" value="salary" checked> 工资
+                        </label>
+                        <label style="cursor: pointer;">
+                            <input type="radio" name="budgetType" value="total"> 总工薪 <i
+                                class="fa-regular fa-circle-question" style="color: #86909C;"></i>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn-white">预算变更记录</button>
+                </div>
+            </div>
+
+            <!-- Body / Table -->
+            <div class="modal-body">
+                <div class="table-wrapper">
+                    <table class="data-table modal-table">
+                        <thead id="modal-thead">
+                            <!-- Dynamic Header -->
+                        </thead>
+                        <tbody id="modal-table-body">
+                            <!-- JS Generated Content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Data Definitions ---
+
+        // Tree Data
+        const TREE_DATA = [
+            {
+                id: '1', name: '远景工作室', type: 'group', expanded: true,
+                values: {
+                    h26_cur: [48, 5, 0, 0, 0], h26_tgt: [50, 9, 0, 0, 0],
+                    cost_acc: 1200.0, cost_year: 2400.0,
+                    h27_plan: [50, 9, 0, 0, 0]
+                },
+                children: [
+                    { id: '1-1', name: '研发部', type: 'leaf', values: { h26_cur: [13, 5, 0, 0, 0], h26_tgt: [12, 5, 0, 0, 0], cost_acc: 326.0, cost_year: 782.2, h27_plan: [12, 5, 0, 0, 0] } },
+                    { id: '1-2', name: '支撑部', type: 'leaf', values: { h26_cur: [14, 0, 0, 0, 0], h26_tgt: [17, 2, 0, 0, 0], cost_acc: 321.0, cost_year: 741.8, h27_plan: [17, 2, 0, 0, 0] } },
+                    { id: '1-3', name: '增长部', type: 'leaf', values: { h26_cur: [20, 0, 0, 0, 0], h26_tgt: [20, 2, 0, 0, 0], cost_acc: 321.0, cost_year: 770.4, h27_plan: [20, 2, 0, 0, 0] } }
+                ]
+            },
+            {
+                id: '2', name: '游戏开发运维中心', type: 'group', expanded: true,
+                values: {
+                    h26_cur: [180, 19, 1, 25, 1], h26_tgt: [198, 30, 1, 25, 1],
+                    cost_acc: 4900.0, cost_year: 10100.0,
+                    h27_plan: [198, 30, 1, 25, 1]
+                },
+                children: [
+                    {
+                        id: '2-1', name: '数据平台部', type: 'group', expanded: true,
+                        values: { h26_cur: [60, 12, 0, 11, 0], h26_tgt: [66, 15, 0, 11, 0], cost_acc: 1633.3, cost_year: 3366.7, h27_plan: [66, 15, 0, 11, 0] },
+                        children: [
+                            { id: '2-1-1', name: 'BI平台组', type: 'leaf', values: { h26_cur: [20, 5, 0, 9, 0], h26_tgt: [22, 5, 0, 9, 0], cost_acc: 544.4, cost_year: 1122.2, h27_plan: [22, 5, 0, 9, 0] } },
+                            { id: '2-1-2', name: '实时架构组', type: 'leaf', values: { h26_cur: [20, 3, 0, 2, 0], h26_tgt: [22, 5, 0, 2, 0], cost_acc: 544.4, cost_year: 1122.2, h27_plan: [22, 5, 0, 2, 0] } },
+                            { id: '2-1-3', name: '数据仓库组', type: 'leaf', values: { h26_cur: [20, 4, 0, 0, 0], h26_tgt: [22, 5, 0, 0, 0], cost_acc: 544.4, cost_year: 1122.2, h27_plan: [22, 5, 0, 0, 0] } }
+                        ]
+                    },
+                    {
+                        id: '2-2', name: '产品技术部', type: 'group', expanded: false,
+                        values: { h26_cur: [60, 3, 1, 14, 1], h26_tgt: [66, 9, 1, 14, 1], cost_acc: 1633.3, cost_year: 3366.7, h27_plan: [66, 9, 1, 14, 1] },
+                        children: [] // Simplified
+                    },
+                    {
+                        id: '2-3', name: '运维部', type: 'group', expanded: false,
+                        values: { h26_cur: [60, 4, 0, 0, 0], h26_tgt: [66, 6, 0, 0, 0], cost_acc: 1633.3, cost_year: 3366.7, h27_plan: [66, 6, 0, 0, 0] },
+                        children: [] // Simplified
+                    }
+                ]
+            }
+        ];
+
+        // --- Render Logic ---
+
+        const tbody = document.getElementById('dept-tree-body');
+
+        function renderTree(nodes, level = 0, parentVisible = true) {
+            nodes.forEach(node => {
+                const tr = document.createElement('tr');
+                if (!parentVisible) tr.style.display = 'none';
+                tr.setAttribute('data-id', node.id);
+
+                // 1. Dept Name Column
+                const tdName = document.createElement('td');
+                tdName.className = 'cell-left';
+                const padding = level * 24 + 12;
+
+                let toggleHtml = '';
+                if (node.children && node.children.length > 0) {
+                    toggleHtml = `<span class="tree-toggle ${node.expanded ? '' : 'collapsed'}" onclick="toggleRow('${node.id}')"><i class="fa-solid fa-caret-down"></i></span>`;
+                } else {
+                    toggleHtml = `<span class="tree-toggle invisible"><i class="fa-solid fa-caret-down"></i></span>`;
+                }
+
+                tdName.innerHTML = `<div class="tree-cell" style="padding-left: ${padding}px;">${toggleHtml}<span>${node.name}</span></div>`;
+                tr.appendChild(tdName);
+
+                // 2. 2026 Budget Adjustment Button (Mock)
+                const tdEdit26 = document.createElement('td');
+                tdEdit26.className = 'cell-center';
+                tdEdit26.innerHTML = `<i class="fa-regular fa-pen-to-square icon-btn" title="调整"></i>`;
+                tr.appendChild(tdEdit26);
+
+                // 3. 2026 Data
+                const v = node.values;
+
+                // HC Current (5 cols)
+                v.h26_cur.forEach(val => {
+                    const td = document.createElement('td');
+                    td.textContent = val;
+                    tr.appendChild(td);
+                });
+                // HC Target (5 cols)
+                v.h26_tgt.forEach(val => {
+                    const td = document.createElement('td');
+                    td.textContent = val;
+                    tr.appendChild(td);
+                });
+
+                // Cost (3 cols)
+                const tdAcc = document.createElement('td');
+                tdAcc.className = 'cell-right';
+                tdAcc.innerHTML = `<strong>${v.cost_acc.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</strong>`;
+                tr.appendChild(tdAcc);
+
+                const tdYear = document.createElement('td');
+                tdYear.className = 'cell-right';
+                tdYear.innerHTML = `<strong>${v.cost_year.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</strong>`;
+                tr.appendChild(tdYear);
+
+                const tdLink = document.createElement('td');
+                tdLink.className = 'cell-center';
+                tdLink.innerHTML = `<span class="text-blue" onclick="openModal('${node.name}')">预实比对</span>`;
+                tr.appendChild(tdLink);
+
+                // 4. 2027 Header (Start)
+                // 2027 Budget Compilation Button
+                const tdEdit27 = document.createElement('td');
+                tdEdit27.className = 'cell-center';
+                tdEdit27.style.backgroundColor = '#eef6ff';
+                tdEdit27.innerHTML = `<i class="fa-regular fa-file icon-btn" title="编制"></i>`;
+                tr.appendChild(tdEdit27);
+
+                // 2027 Plan HC (6 cols to fill space? 5 cols matched above, let's add 5 + 1 dummy)
+                // The header had 6 cols for plan. Let's use 5 for HC and 1 for '...'
+                v.h27_plan.forEach(val => {
+                    const td = document.createElement('td');
+                    td.style.backgroundColor = '#eef6ff'; // Light blue tone for 2027
+                    td.textContent = val;
+                    tr.appendChild(td);
+                });
+                // Dummy col
+                const tdDummy = document.createElement('td');
+                tdDummy.style.backgroundColor = '#eef6ff';
+                tdDummy.textContent = '(';
+                tr.appendChild(tdDummy);
+
+
+                tbody.appendChild(tr);
+
+                // Recursively render children
+                if (node.children) {
+                    renderTree(node.children, level + 1, parentVisible && node.expanded);
+                }
+            });
+        }
+
+        // Toggle Logic
+        window.toggleRow = function (id) {
+            // Find node in data (naive search)
+            const findNode = (nodes) => {
+                for (let n of nodes) {
+                    if (n.id === id) return n;
+                    if (n.children) {
+                        const found = findNode(n.children);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+
+            const node = findNode(TREE_DATA);
+            if (node) {
+                node.expanded = !node.expanded;
+                // Re-render whole table for simplicity
+                tbody.innerHTML = '';
+                renderTree(TREE_DATA);
+            }
+        };
+
+        // Initial Render
+        renderTree(TREE_DATA);
+
+        // --- Modal Logic ---
+        // --- Modal Logic ---
+        const modal = document.getElementById('comparison-modal');
+        const modalBody = document.getElementById('modal-table-body');
+        const modalThead = document.getElementById('modal-thead');
+        const dataTypeSelect = document.getElementById('dataTypeSelect');
+        const budgetRadios = document.getElementById('budgetRadios');
+
+        window.toggleDataType = function () {
+            const type = document.getElementById('dataTypeSelect').value;
+            if (type === 'budget') {
+                document.getElementById('budgetRadios').style.display = 'flex';
+            } else {
+                document.getElementById('budgetRadios').style.display = 'none';
+            }
+            generateModalData();
+        };
+
+        window.openModal = function (deptName) {
+            // Update department name in filter (Mock)
+            const inputs = document.querySelector('.modal-header').querySelectorAll('input[type="text"]');
+            if (inputs[0]) inputs[0].value = `游戏业务/游戏工作室群/${deptName}`;
+
+            // Reset to HC by default or keep state? Let's reset.
+            document.getElementById('dataTypeSelect').value = 'hc';
+            toggleDataType();
+
+            modal.style.display = 'flex';
+        };
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        function generateModalData() {
+            const type = document.getElementById('dataTypeSelect').value;
+            const isBudget = type === 'budget';
+
+            modalBody.innerHTML = '';
+            modalThead.innerHTML = '';
+
+            // Generate Header
+            const trHead = document.createElement('tr');
+            trHead.innerHTML = `<th style="width: 120px;" colspan="2">2026年</th>
+                                <th>一月</th><th>二月</th><th>三月</th><th>四月</th><th>五月</th><th>六月</th>
+                                <th>七月</th><th>八月</th><th>九月</th><th>十月</th><th>十一月</th><th>十二月</th>
+                                ${isBudget ? '<th>2026全年</th>' : ''}`;
+            modalThead.appendChild(trHead);
+
+            const groups = [
+                { name: '正式员工', type: 'reg' },
+                { name: '人力外包', type: 'out' },
+                { name: '实习生', type: 'intern' },
+                { name: '派遣', type: 'dispatch' }, // Usually matching 'Labor Dispatch'
+                { name: '兼职', type: 'part' }
+            ];
+
+            let rows = [];
+            if (isBudget) {
+                rows = [
+                    { label: '年初预算金额(万)', key: 'init' },
+                    { label: '当前预算金额(万)', key: 'curr' },
+                    { label: '已用金额(万)', key: 'used' },
+                    { label: '剩余金额(万)', key: 'remain' }
+                ];
+            } else {
+                rows = [
+                    { label: '年初HC预算数', key: 'init' },
+                    { label: '当前HC预算数', key: 'curr' },
+                    { label: '已使用HC数', key: 'used' },
+                    { label: '剩余HC数', key: 'remain' }
+                ];
+            }
+
+            // Mock Data Generator
+            const getRandomSequence = (base, isMoney) => {
+                let seq = [];
+                let current = base;
+                for (let i = 0; i < 12; i++) {
+                    if (isMoney) {
+                        // Money fluctuates more, 1 decimal
+                        current += (Math.random() * 10 - 4);
+                        seq.push(Number(current.toFixed(1)));
+                    } else {
+                        // HC Integer
+                        if (Math.random() > 0.7) current += (Math.floor(Math.random() * 3) - 1);
+                        seq.push(Number(current.toFixed(0)));
+                    }
+                }
+                return seq;
+            };
+
+            groups.forEach(group => {
+                // Generate data for this group
+                let base = 60;
+                if (group.type === 'out') base = 30;
+                else if (group.type === 'intern') base = 5;
+                else if (group.type === 'part') base = 1;
+                else if (group.type === 'dispatch') base = 3;
+
+                if (isBudget) base = base * 2.5; // Money proxy
+
+                const initVal = isBudget ? Number((base * 0.9).toFixed(1)) : Math.floor(base * 0.9);
+                const initData = Array(12).fill(initVal);
+                const currData = getRandomSequence(base, isBudget);
+
+                const usedData = currData.map(v => {
+                    const u = v * (0.9 + Math.random() * 0.15); // Used near current
+                    return isBudget ? Number(u.toFixed(1)) : Math.floor(u);
+                });
+
+                const remainData = currData.map((v, i) => {
+                    let r = v - usedData[i];
+                    return isBudget ? Number(r.toFixed(1)) : r;
+                });
+
+                const dataMap = {
+                    'init': initData,
+                    'curr': currData,
+                    'used': usedData,
+                    'remain': remainData
+                };
+
+                rows.forEach((row, rIndex) => {
+                    const tr = document.createElement('tr');
+
+                    // First row of the group creates the rowspan cell
+                    if (rIndex === 0) {
+                        const tdGroup = document.createElement('td');
+                        tdGroup.rowSpan = 4;
+                        tdGroup.textContent = group.name;
+                        tdGroup.className = 'cell-center text-bold';
+                        tdGroup.style.width = '20px'; // Narrow
+                        tdGroup.style.padding = '0 8px';
+                        tdGroup.style.writingMode = 'vertical-rl';
+                        tdGroup.style.textOrientation = 'upright';
+                        tdGroup.style.letterSpacing = '4px';
+                        tr.appendChild(tdGroup);
+                    }
+
+                    // Label
+                    const tdLabel = document.createElement('td');
+                    tdLabel.textContent = row.label;
+                    tdLabel.style.textAlign = 'center';
+                    tdLabel.style.fontSize = '12px';
+                    tdLabel.style.color = '#4E5969';
+                    tr.appendChild(tdLabel);
+
+                    // 12 Months Data
+                    const data = dataMap[row.key];
+                    let yearSum = 0;
+                    data.forEach(val => {
+                        const td = document.createElement('td');
+                        td.className = 'cell-center';
+                        td.textContent = val;
+                        tr.appendChild(td);
+                        yearSum += val;
+                    });
+
+                    // Full Year Column (Only for Budget)
+                    if (isBudget) {
+                        const tdTotal = document.createElement('td');
+                        tdTotal.className = 'cell-right text-bold';
+                        tdTotal.textContent = yearSum.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+                        tr.appendChild(tdTotal);
+                    }
+
+                    modalBody.appendChild(tr);
+                });
+            });
+        }
+    </script>
+</body>
+
+</html>
