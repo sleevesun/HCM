@@ -225,10 +225,10 @@ interface Metrics {
   has_child_to_approve?: boolean
 }
 
-interface DashboardDeptNode extends DeptNode {
-  values?: Metrics
-  children?: DashboardDeptNode[]
-}
+// interface DashboardDeptNode extends DeptNode {
+//   values?: Metrics
+//   children?: DashboardDeptNode[]
+// }
 
 // --- State ---
 const approvalStatus = ref('pending')

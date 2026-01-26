@@ -85,7 +85,7 @@
                 size="small"
                 :scroll="{ x: 'max-content', y: 400 }"
                 class="matrix-table"
-                :rowClassName="(record) => record.isSummary ? 'summary-row' : ''"
+                :rowClassName="(record: any) => record.isSummary ? 'summary-row' : ''"
               >
                 <template #bodyCell="{ column, record }">
                   <template v-if="column.dataIndex === 'name'">
@@ -133,7 +133,7 @@
                 size="small"
                 :scroll="{ x: 'max-content', y: 400 }"
                 class="matrix-table"
-                :rowClassName="(record) => record.isSummary ? 'summary-row' : ''"
+                :rowClassName="(record: any) => record.isSummary ? 'summary-row' : ''"
               >
                 <template #bodyCell="{ column, record }">
                   <template v-if="column.dataIndex === 'name'">
@@ -154,8 +154,8 @@
                         :min="0"
                         :max="getSourceRemaining(record.name, column.dataIndex)"
                         style="width: 100%"
-                        :formatter="value => `¥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-                        :parser="value => value.replace(/\¥\s?|(,*)/g, '')"
+                        :formatter="(value: any) => `¥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+                        :parser="(value: any) => value.replace(/\¥\s?|(,*)/g, '')"
                         :status="isTransferInvalid(record.name, column.dataIndex, record[column.dataIndex].transferAmount) ? 'error' : ''"
                         @change="handleTransferChange"
                         :disabled="false"
@@ -272,12 +272,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { Modal, message } from 'ant-design-vue'
 import {
   SwapOutlined,
   WarningOutlined,
-  ArrowRightOutlined,
   SyncOutlined,
   PlusCircleOutlined,
   InfoCircleOutlined
@@ -434,10 +433,10 @@ const targetError = computed(() => {
   return formState.sourceDeptId && formState.targetDeptId && formState.sourceDeptId === formState.targetDeptId
 })
 
-const isOverBudget = computed(() => {
-  // Logic moved to row-level validation
-  return false 
-})
+// const isOverBudget = computed(() => {
+//   // Logic moved to row-level validation
+//   return false 
+// })
 
 const selectedHcCost = computed(() => {
   return vacantHcList.value
@@ -506,13 +505,13 @@ const handleTargetChange = (val: string) => {
 const getSourceRemaining = (deptName: string, catKey: string): number => {
   // Fallback: Find by Name match
   // 1. Find Target Category Name
-  let targetCatName = ''
+  // let targetCatName = ''
   let targetSubName = ''
   
   // Find which row we are in Target Matrix to get names
   // This helper is called with deptName and catKey
   targetSubName = deptName
-  targetCatName = FIXED_CATEGORIES.find(c => c.key === catKey)?.name || ''
+  // targetCatName = FIXED_CATEGORIES.find(c => c.key === catKey)?.name || ''
   
   // 2. Find Source Category with same SubDept Name
   // Source Matrix Row structure: { name: '产品组', overtime: {...}, ... }
@@ -567,34 +566,34 @@ const handleTransferChange = () => {
 }
 
 // Transfer Table Columns
-const leftColumns = [
-  { dataIndex: 'code', title: 'HC编码' },
-  { dataIndex: 'title', title: '职位名称' },
-  { dataIndex: 'level', title: '职级' },
-]
+// const leftColumns = [
+//   { dataIndex: 'code', title: 'HC编码' },
+//   { dataIndex: 'title', title: '职位名称' },
+//   { dataIndex: 'level', title: '职级' },
+// ]
 
-const rightColumns = [
-  { dataIndex: 'code', title: 'HC编码' },
-  { dataIndex: 'title', title: '职位名称' },
-  { dataIndex: 'cost', title: '年成本' },
-]
+// const rightColumns = [
+//   { dataIndex: 'code', title: 'HC编码' },
+//   { dataIndex: 'title', title: '职位名称' },
+//   { dataIndex: 'cost', title: '年成本' },
+// ]
 
-const getRowSelection = ({ selectedKeys, onItemSelect }: any) => {
-  return {
-    onSelect: (record: any, selected: boolean) => {
-      onItemSelect(record.key, selected);
-    },
-    selectedRowKeys: selectedKeys,
-  };
-};
+// const getRowSelection = ({ selectedKeys, onItemSelect }: any) => {
+//   return {
+//     onSelect: (record: any, selected: boolean) => {
+//       onItemSelect(record.key, selected);
+//     },
+//     selectedRowKeys: selectedKeys,
+//   };
+// };
 
-const filterOption = (inputValue: string, item: any) => {
-  return item.title.indexOf(inputValue) > -1 || item.code.indexOf(inputValue) > -1;
-};
+// const filterOption = (inputValue: string, item: any) => {
+//   return item.title.indexOf(inputValue) > -1 || item.code.indexOf(inputValue) > -1;
+// };
 
-const handleHcChange = (keys: string[]) => {
-  formState.selectedHcKeys = keys
-}
+// const handleHcChange = (keys: string[]) => {
+//   formState.selectedHcKeys = keys
+// }
 
 const hcColumns = [
   { title: 'HC编码', dataIndex: 'code', key: 'code', width: 120, fixed: 'left' },
@@ -609,10 +608,10 @@ const hcColumns = [
     title: `${i + 1}月`,
     key: `month_${i}`,
     width: 80,
-    align: 'right'
+    align: 'right' as const
   })),
-  { title: '全年工资', dataIndex: 'yearSalary', key: 'yearSalary', width: 120, align: 'right' },
-  { title: '全年工薪', dataIndex: 'yearTotal', key: 'yearTotal', width: 120, align: 'right' },
+  { title: '全年工资', dataIndex: 'yearSalary', key: 'yearSalary', width: 120, align: 'right' as const },
+  { title: '全年工薪', dataIndex: 'yearTotal', key: 'yearTotal', width: 120, align: 'right' as const },
 ]
 
 const rowSelection = {

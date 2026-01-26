@@ -287,7 +287,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useSalaryBudgetStore } from '../stores/salaryBudget'
 import {
   ExportOutlined,
@@ -353,7 +353,7 @@ const pendingData = [
 ]
 
 // RowSpan Logic
-const rowSpanType = (record: any, index: number) => {
+const rowSpanType = (_record: any, index: number) => {
   if (index === 0) return { rowSpan: 3 }
   if (index === 1 || index === 2) return { rowSpan: 0 }
   if (index === 3) return { rowSpan: 4 }
@@ -361,7 +361,7 @@ const rowSpanType = (record: any, index: number) => {
   return {}
 }
 
-const rowSpanAction = (record: any, index: number) => {
+const rowSpanAction = (_record: any, index: number) => {
   if (index === 0) return { rowSpan: 3 }
   if (index === 1 || index === 2) return { rowSpan: 0 }
   if (index === 3) return { rowSpan: 4 }

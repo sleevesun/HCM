@@ -19,7 +19,7 @@ export interface SalaryDataNode {
 
 export const useSalaryBudgetStore = defineStore('salaryBudget', () => {
   
-  const generateNodeData = (node: any, year = '2026'): SalaryDataNode => {
+  const generateNodeData = (node: any, _year = '2026'): SalaryDataNode => {
     // Re-use logic from Dashboard.vue for consistency, but adapted for new structure
     // We need to sync with Dashboard.vue's generateMetrics logic.
     // Dashboard logic:
@@ -136,7 +136,7 @@ export const useSalaryBudgetStore = defineStore('salaryBudget', () => {
       const month_pre = (reg_pre + other_pre) * costPerHead;
       const year_pre = month_pre * 12;
       
-      const cost_year = Number(year_pre.toFixed(1)); // Requirement 2
+      // const cost_year = Number(year_pre.toFixed(1)); // Requirement 2
       
       // Target 2026: Temporarily same as 2027 (Requirement 2 says "2026 budget data temporarily use same as 2027 values", but wait)
       // Requirement 2 text: "2026年预算数据暂时采用与2027年相同的数值" -> "2026 Budget Data ... same as 2027".
