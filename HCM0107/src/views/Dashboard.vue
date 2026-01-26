@@ -21,6 +21,7 @@
             <template #title><file-text-outlined /> 编制管理</template>
             <a-menu-item key="3-1">审批中心</a-menu-item>
             <a-menu-item key="3-2">工薪预算驾驶舱</a-menu-item>
+            <a-menu-item key="3-3">预算划转</a-menu-item>
           </a-sub-menu>
         </a-menu>
       </div>
@@ -68,6 +69,8 @@ const handleMenuClick = ({ key }: { key: string }) => {
     router.push('/approval-center')
   } else if (key === '3-2') {
     router.push('/salary-budget')
+  } else if (key === '3-3') {
+    router.push('/budget-transfer')
   }
 }
 
@@ -79,6 +82,8 @@ watch(
       currentMenu.value = ['3-1']
     } else if (path.includes('salary-budget')) {
       currentMenu.value = ['3-2']
+    } else if (path.includes('budget-transfer')) {
+      currentMenu.value = ['3-3']
     }
   },
   { immediate: true }
