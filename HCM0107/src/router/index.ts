@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import ApprovalCenter from '../views/ApprovalCenter.vue'
 import SalaryBudgetCockpit from '../views/SalaryBudgetCockpit.vue'
 import BudgetTransfer from '../views/BudgetTransfer.vue'
+import BudgetAdjustment from '../views/BudgetAdjustment.vue'
+import BudgetPlanning from '../views/BudgetPlanning.vue'
 
 const routes = [
   {
@@ -19,6 +21,18 @@ const routes = [
     name: 'SalaryBudget',
     component: SalaryBudgetCockpit,
     meta: { title: '工薪预算驾驶舱' }
+  },
+  {
+    path: '/budget-adjust',
+    name: 'BudgetAdjustment',
+    component: BudgetAdjustment,
+    meta: { title: '预算调整' }
+  },
+  {
+    path: '/budget-planning',
+    name: 'BudgetPlanning',
+    component: BudgetPlanning,
+    meta: { title: '预算编制/调整' }
   },
   {
     path: '/budget-transfer',

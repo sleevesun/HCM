@@ -184,14 +184,22 @@
               :columns="hcColumns"
               :row-selection="rowSelection"
               size="small"
-              :pagination="{ pageSize: 10 }"
+              :pagination="{ pageSize: 50, showSizeChanger: false }"
               :scroll="{ x: 'max-content', y: 400 }"
               rowKey="key"
             >
               <template #bodyCell="{ column, record }">
+                <template v-if="column.key === 'code'">
+                  <span>{{ record.code }}</span>
+                  <a-tag v-if="record.isGap" color="orange" style="margin-left: 4px; font-size: 10px; line-height: 16px;">补差额</a-tag>
+                </template>
+                <template v-if="['family', 'rank', 'location', 'insurance'].includes(column.key)">
+                  <span v-if="record.isGap" style="color: #ccc;">--</span>
+                  <span v-else>{{ record[column.key] }}</span>
+                </template>
                 <template v-if="column.key.startsWith('month_')">
                   <span class="salary-item">
-                    {{ formatMoney(record.monthlySalaries[parseInt(column.key.split('_')[1])]) }}
+                    {{ record.monthlySalaries[parseInt(column.key.split('_')[1])] !== null ? formatMoney(record.monthlySalaries[parseInt(column.key.split('_')[1])]) : '-' }}
                   </span>
                 </template>
                 <template v-if="['yearSalary', 'yearTotal'].includes(column.key)">
@@ -202,8 +210,33 @@
           </div>
           
           <div class="tab-footer-stat">
-            本次拟划转：<strong>{{ formState.selectedHcKeys.length }}</strong> 人，
-            涉及预算包：<strong>¥ {{ formatMoney(selectedHcCost) }}</strong>
+            <div class="info-tip" v-if="vacantHcList.some(i => i.isGap)">
+              <info-circle-outlined /> 提示：补差额 HC 将随对应类型的常规 HC 自动选中，不计入 HC 数量统计，但会计入薪酬总额。
+            </div>
+            <div v-if="formState.selectedHcKeys.length === 0" class="empty-stat">
+              请至少选择一个 HC 类型以查看统计信息
+            </div>
+            <div v-else class="stat-list">
+              <div v-for="(stat, type) in selectedHcStats" :key="type" class="stat-card">
+                <div class="stat-header">
+                  <span class="type-tag">{{ type }}</span>
+                </div>
+                <div class="stat-body">
+                  <div class="stat-item">
+                    <span class="label">划转数量</span>
+                    <span class="value">{{ stat.count }} <small>个</small></span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="label">工资总额</span>
+                    <span class="value">¥ {{ formatMoney(stat.totalSalary) }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="label">工薪总额</span>
+                    <span class="value">¥ {{ formatMoney(stat.totalCost) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </a-tab-pane>
 
@@ -258,7 +291,7 @@
       <div class="footer-summary">
         <span class="summary-item">部门级预算: <strong>¥ {{ formatMoney(formState.transferAmount || 0) }}</strong></span>
         <span class="divider">|</span>
-        <span class="summary-item">HC: <strong>{{ formState.selectedHcKeys.length }}</strong> 个</span>
+        <span class="summary-item">HC: <strong>{{ vacantHcList.filter(i => formState.selectedHcKeys.includes(i.key) && !i.isGap).length }}</strong> 个</span>
         <span class="divider">|</span>
         <span class="summary-item">补差额预算: <strong>¥ {{ formatMoney(totalGapTransfer) }}</strong></span>
       </div>
@@ -293,14 +326,56 @@ const deptOptions = [
 ]
 
 const mockHcData = [
-  { key: 'HC001', code: 'HC-2026-001', title: '高级Java开发', level: 'P7', cost: 600000, type: '正编', dept: '产品组', project: '诛仙世界', family: '技术', rank: 'P6-P8', location: '北京', insurance: '北京', monthlySalaries: Array(12).fill(50000), yearSalary: 600000, yearTotal: 780000 },
-  { key: 'HC002', code: 'HC-2026-002', title: '资深前端专家', level: 'P8', cost: 800000, type: '正编', dept: '前端组', project: '完美世界', family: '技术', rank: 'P7-P9', location: '上海', insurance: '上海', monthlySalaries: Array(12).fill(66666), yearSalary: 800000, yearTotal: 1040000 },
-  { key: 'HC003', code: 'HC-2026-003', title: '产品经理', level: 'P6', cost: 400000, type: '外包', dept: '后端组', project: '幻塔', family: '产品', rank: 'P5-P7', location: '成都', insurance: '成都', monthlySalaries: Array(12).fill(33333), yearSalary: 400000, yearTotal: 520000 },
-  { key: 'HC004', code: 'HC-2026-004', title: 'UI设计师', level: 'P5', cost: 250000, type: '实习', dept: '设计组', project: '诛仙世界', family: '设计', rank: 'P4-P6', location: '北京', insurance: '北京', monthlySalaries: Array(12).fill(20833), yearSalary: 250000, yearTotal: 325000 },
-  { key: 'HC005', code: 'HC-2026-005', title: '测试工程师', level: 'P5', cost: 200000, type: '派遣', dept: '测试组', project: '完美世界', family: '测试', rank: 'P4-P6', location: '北京', insurance: '北京', monthlySalaries: Array(12).fill(16666), yearSalary: 200000, yearTotal: 260000 },
+  { key: 'HC001', code: 'HC-2026-001', title: '高级Java开发', level: 'P7', cost: 600000, type: '正编', dept: '产品组', project: '诛仙世界', family: '技术', rank: '14~16', location: '北京', insurance: '北京', monthlySalaries: Array(12).fill(50000), yearSalary: 600000, yearTotal: 780000 },
+  { key: 'HC002', code: 'HC-2026-002', title: '资深前端专家', level: 'P8', cost: 800000, type: '正编', dept: '前端组', project: '完美世界', family: '技术', rank: '17~19', location: '上海', insurance: '上海', monthlySalaries: Array(12).fill(66666), yearSalary: 800000, yearTotal: 1040000 },
+  { key: 'HC003', code: 'HC-2026-003', title: '产品经理', level: 'P6', cost: 400000, type: '外包', dept: '后端组', project: '幻塔', family: '产品', rank: '11~13', location: '成都', insurance: '成都', monthlySalaries: Array(12).fill(33333), yearSalary: 400000, yearTotal: 520000 },
+  { key: 'HC004', code: 'HC-2026-004', title: 'UI设计师', level: 'P5', cost: 250000, type: '实习', dept: '设计组', project: '诛仙世界', family: '设计', rank: '10级以下', location: '北京', insurance: '北京', monthlySalaries: Array(12).fill(20833), yearSalary: 250000, yearTotal: 325000 },
+  { key: 'HC005', code: 'HC-2026-005', title: '测试工程师', level: 'P5', cost: 200000, type: '派遣', dept: '测试组', project: '完美世界', family: '测试', rank: '10级以下', location: '北京', insurance: '北京', monthlySalaries: Array(12).fill(16666), yearSalary: 200000, yearTotal: 260000 },
+  { key: 'HC006', code: 'HC-2026-006', title: '兼职翻译', level: 'P4', cost: 100000, type: '兼职', dept: '运营组', project: 'Dota2', family: '运营', rank: '10级以下', location: '上海', insurance: '上海', monthlySalaries: Array(12).fill(8333), yearSalary: 100000, yearTotal: 130000 },
+  // Regular (5 more)
+  { key: 'HC007', code: 'HC-2026-007', title: '高级3D美术', level: 'P7', cost: 550000, type: '正编', dept: '美术组', project: '诛仙世界', family: '美术', rank: '14~16', location: '北京', insurance: '北京', monthlySalaries: Array(12).fill(45833), yearSalary: 550000, yearTotal: 715000 },
+  { key: 'HC008', code: 'HC-2026-008', title: '系统策划', level: 'P6', cost: 450000, type: '正编', dept: '策划组', project: '完美世界', family: '策划', rank: '11~13', location: '北京', insurance: '北京', monthlySalaries: Array(12).fill(37500), yearSalary: 450000, yearTotal: 585000 },
+  { key: 'HC009', code: 'HC-2026-009', title: '客户端开发', level: 'P6', cost: 480000, type: '正编', dept: '程序组', project: '幻塔', family: '技术', rank: '11~13', location: '成都', insurance: '成都', monthlySalaries: Array(12).fill(40000), yearSalary: 480000, yearTotal: 624000 },
+  { key: 'HC010', code: 'HC-2026-010', title: '数值策划', level: 'P7', cost: 520000, type: '正编', dept: '策划组', project: '幻塔', family: '策划', rank: '14~16', location: '成都', insurance: '成都', monthlySalaries: Array(12).fill(43333), yearSalary: 520000, yearTotal: 676000 },
+  { key: 'HC011', code: 'HC-2026-011', title: '引擎开发专家', level: 'P9', cost: 1200000, type: '正编', dept: '引擎组', project: '中台', family: '技术', rank: '20级以上', location: '北京', insurance: '北京', monthlySalaries: Array(12).fill(100000), yearSalary: 1200000, yearTotal: 1560000 },
+  // Intern (4 more with specific patterns)
+  { key: 'HC012', code: 'HC-2026-012', title: '实习策划', level: 'P4', cost: 30000, type: '实习', dept: '策划组', project: 'Dota2', family: '策划', rank: '10级以下', location: '上海', insurance: '上海', monthlySalaries: [...Array(6).fill(5000), ...Array(6).fill(null)], yearSalary: 30000, yearTotal: 39000 },
+  { key: 'HC013', code: 'HC-2026-013', title: '实习测试', level: 'P4', cost: 35000, type: '实习', dept: '测试组', project: 'CSGO', family: '测试', rank: '10级以下', location: '上海', insurance: '上海', monthlySalaries: [...Array(7).fill(5000), ...Array(5).fill(null)], yearSalary: 35000, yearTotal: 45500 },
+  { key: 'HC014', code: 'HC-2026-014', title: '实习美术', level: 'P4', cost: 45000, type: '实习', dept: '美术组', project: '诛仙世界', family: '美术', rank: '10级以下', location: '北京', insurance: '北京', monthlySalaries: [...Array(9).fill(5000), ...Array(3).fill(null)], yearSalary: 45000, yearTotal: 58500 },
+  { key: 'HC015', code: 'HC-2026-015', title: '实习运营', level: 'P4', cost: 50000, type: '实习', dept: '运营组', project: '完美世界', family: '运营', rank: '10级以下', location: '北京', insurance: '北京', monthlySalaries: [...Array(10).fill(5000), ...Array(2).fill(null)], yearSalary: 50000, yearTotal: 65000 },
+  // Outsourced (3 more)
+  { key: 'HC016', code: 'HC-2026-016', title: '外包测试', level: 'P5', cost: 180000, type: '外包', dept: '测试组', project: '幻塔', family: '测试', rank: '10级以下', location: '成都', insurance: '成都', monthlySalaries: Array(12).fill(15000), yearSalary: 180000, yearTotal: 234000 },
+  { key: 'HC017', code: 'HC-2026-017', title: '外包美术', level: 'P5', cost: 240000, type: '外包', dept: '美术组', project: '诛仙世界', family: '美术', rank: '10级以下', location: '北京', insurance: '北京', monthlySalaries: Array(12).fill(20000), yearSalary: 240000, yearTotal: 312000 },
+  { key: 'HC018', code: 'HC-2026-018', title: '外包客服', level: 'P4', cost: 120000, type: '外包', dept: '客服组', project: 'Dota2', family: '客服', rank: '10级以下', location: '上海', insurance: '上海', monthlySalaries: Array(12).fill(10000), yearSalary: 120000, yearTotal: 156000 },
+  // Gap HCs
+  { key: 'GAP001', code: 'GAP-2026-001', title: '正编补差', level: '', cost: 100000, type: '正编', dept: '产品组', project: '诛仙世界', family: '', rank: '', location: '', insurance: '', monthlySalaries: Array(12).fill(100000/12), yearSalary: 100000, yearTotal: 100000, isGap: true, parentKey: 'HC001' },
+  { key: 'GAP002', code: 'GAP-2026-002', title: '外包补差', level: '', cost: 50000, type: '外包', dept: '后端组', project: '幻塔', family: '', rank: '', location: '', insurance: '', monthlySalaries: Array(12).fill(50000/12), yearSalary: 50000, yearTotal: 50000, isGap: true, parentKey: 'HC003' },
 ]
 
-const vacantHcList = ref(mockHcData)
+const vacantHcList = computed(() => {
+  const typeOrder = ['正编', '外包', '实习', '派遣', '兼职']
+  
+  return [...mockHcData].sort((a, b) => {
+    // 1. Dept (Ascending)
+    if (a.dept !== b.dept) {
+      return a.dept.localeCompare(b.dept, 'zh-CN')
+    }
+    
+    // 2. Type (Custom Order)
+    const typeIdxA = typeOrder.indexOf(a.type)
+    const typeIdxB = typeOrder.indexOf(b.type)
+    if (typeIdxA !== typeIdxB) {
+      return typeIdxA - typeIdxB
+    }
+    
+    // 3. Gap HC first
+    if (a.isGap !== b.isGap) {
+      return a.isGap ? -1 : 1
+    }
+    
+    return 0
+  })
+})
 
 const gapBudgetList = [
   { key: 1, type: '正编补差', sourceBalance: 500000, transferAmount: 0, targetBalance: 100000, hasTargetType: true },
@@ -444,6 +519,27 @@ const selectedHcCost = computed(() => {
     .reduce((sum, item) => sum + item.cost, 0)
 })
 
+const selectedHcStats = computed(() => {
+  const stats: Record<string, { count: number; totalSalary: number; totalCost: number }> = {}
+  
+  const selectedItems = vacantHcList.value.filter(item => formState.selectedHcKeys.includes(item.key))
+  
+  selectedItems.forEach(item => {
+    if (!stats[item.type]) {
+      stats[item.type] = { count: 0, totalSalary: 0, totalCost: 0 }
+    }
+    // Only count regular HCs
+    if (!item.isGap) {
+      stats[item.type].count++
+    }
+    // Sum salary/cost for ALL selected items (including Gap)
+    stats[item.type].totalSalary += item.yearSalary
+    stats[item.type].totalCost += item.yearTotal
+  })
+  
+  return stats
+})
+
 const totalGapTransfer = computed(() => {
   return gapBudgetList.reduce((sum, item) => sum + (item.transferAmount || 0), 0)
 })
@@ -464,8 +560,8 @@ const getRemainingClass = (val: number) => {
 
 const handleSourceChange = (val: string) => {
   sourceMatrixData.value = generateMatrixData(val)
-  // Simulate HC list change
-  vacantHcList.value = mockHcData.map(item => ({ ...item, disabled: false })) 
+  // Simulate HC list change - vacantHcList is now computed, so we don't need to manually reset it for mock
+  // In real app, we would fetch new data here
 }
 
 const handleTargetChange = (val: string) => {
@@ -608,17 +704,44 @@ const hcColumns = [
     title: `${i + 1}月`,
     key: `month_${i}`,
     width: 80,
-    align: 'right' as const
+    align: 'right' as const,
+    customRender: ({ text, record }: any) => {
+        // Special render logic handled in template slot, but this helps column def completeness
+        return text
+    }
   })),
   { title: '全年工资', dataIndex: 'yearSalary', key: 'yearSalary', width: 120, align: 'right' as const },
   { title: '全年工薪', dataIndex: 'yearTotal', key: 'yearTotal', width: 120, align: 'right' as const },
 ]
 
 const rowSelection = {
-  onChange: (selectedRowKeys: string[]) => {
-    formState.selectedHcKeys = selectedRowKeys
+  onChange: (selectedRowKeys: string[], selectedRows: any[]) => {
+    // 1. Separate regular selection
+    const newSelection = new Set(selectedRowKeys)
+    
+    // 2. Find selected regular HCs
+    const selectedRegulars = selectedRows.filter(r => !r.isGap)
+    
+    // 3. Auto-select associated Gap HCs
+    // Logic: If regular HC is selected, select all Gap HCs with same dept and type
+    vacantHcList.value.filter(item => item.isGap).forEach(gapItem => {
+      const parentRegular = selectedRegulars.find(reg => 
+        reg.dept === gapItem.dept && reg.type === gapItem.type
+      )
+      
+      if (parentRegular) {
+        newSelection.add(gapItem.key)
+      } else {
+        newSelection.delete(gapItem.key)
+      }
+    })
+    
+    formState.selectedHcKeys = Array.from(newSelection)
   },
-  selectedRowKeys: computed(() => formState.selectedHcKeys)
+  selectedRowKeys: computed(() => formState.selectedHcKeys),
+  getCheckboxProps: (record: any) => ({
+    disabled: record.isGap, // Disable checkbox for Gap HCs
+  }),
 }
 
 // Validation helper for Total Transfer Amount
@@ -946,5 +1069,91 @@ const handleSubmit = () => {
   text-align: right;
   color: #595959;
   font-size: 12px;
+}
+
+/* Stat Card Styles */
+.tab-footer-stat {
+  margin-top: 16px;
+  padding: 16px;
+  background: #FAFAFA;
+  border-radius: 4px;
+  border: 1px solid #E5E6EB;
+}
+
+.info-tip {
+  margin-bottom: 12px;
+  color: #86909C;
+  font-size: 13px;
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px dashed #E5E6EB;
+}
+
+.empty-stat {
+  text-align: center;
+  color: #86909C;
+  padding: 12px 0;
+}
+
+.stat-list {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  flex: 1;
+  min-width: 180px; /* Reduced to fit 5 cards */
+  background: #fff;
+  border: 1px solid #E5E6EB;
+  border-radius: 4px;
+  padding: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.stat-header {
+  margin-bottom: 8px;
+  border-bottom: 1px solid #F2F3F5;
+  padding-bottom: 8px;
+}
+
+.type-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #E6F7FF;
+  color: #1890FF;
+  border: 1px solid #91D5FF;
+  border-radius: 2px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.stat-item .label {
+  color: #86909C;
+}
+
+.stat-item .value {
+  color: #1D2129;
+  font-weight: 600;
+}
+
+.stat-item .value small {
+  font-weight: normal;
+  color: #86909C;
+  margin-left: 2px;
 }
 </style>

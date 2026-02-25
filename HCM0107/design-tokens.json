@@ -1,0 +1,71 @@
+{
+  "color": {
+    "primary": {
+      "default": "#4096ff",
+      "hover": "rgba(5, 145, 255, 0.1)",
+      "active": "#096dd9"
+    },
+    "text": {
+      "primary": "rgba(0, 0, 0, 0.88)",
+      "secondary": "rgba(0, 0, 0, 0.45)",
+      "placeholder": "rgba(0, 0, 0, 0.25)",
+      "disabled": "rgba(0, 0, 0, 0.25)"
+    },
+    "background": {
+      "base": "#ffffff",
+      "body": "#f5f5f5",
+      "header-gray": "#fafafa",
+      "header-blue": "#e6f7ff",
+      "hover": "rgba(0, 0, 0, 0.04)",
+      "selected": "#e6f7ff"
+    },
+    "border": {
+      "base": "#d9d9d9",
+      "secondary": "#f0f0f0"
+    },
+    "status": {
+      "success": "#52c41a",
+      "error": "#ff4d4f",
+      "warning": "#fa8c16"
+    }
+  },
+  "font": {
+    "size": {
+      "sm": "12px",
+      "base": "14px",
+      "lg": "16px",
+      "xl": "20px"
+    },
+    "weight": {
+      "regular": 400,
+      "medium": 500,
+      "bold": 700
+    },
+    "family": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif"
+  },
+  "spacing": {
+    "xs": "4px",
+    "sm": "8px",
+    "md": "12px",
+    "lg": "16px",
+    "xl": "24px",
+    "xxl": "32px"
+  },
+  "radius": {
+    "sm": "2px",
+    "base": "4px",
+    "lg": "8px",
+    "round": "50%"
+  },
+  "shadow": {
+    "sm": "0 1px 2px rgba(0, 0, 0, 0.05)",
+    "base": "0 2px 8px rgba(0, 0, 0, 0.15)",
+    "lg": "0 8px 16px rgba(0, 0, 0, 0.15)"
+  },
+  "z-index": {
+    "base": 0,
+    "popup": 1000,
+    "dropdown": 1050,
+    "tooltip": 1060
+  }
+}

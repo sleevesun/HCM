@@ -1,9 +1,9 @@
 <template>
   <div class="cockpit-container">
     <!-- Page Header -->
-    <div class="page-header" style="display: flex; align-items: center; margin-bottom: 20px;">
-      <div class="page-title" style="font-size: 16px; font-weight: 700; color: rgba(0, 0, 0, 0.85); display: flex; align-items: center; margin-right: 24px;">
-        <appstore-outlined style="margin-right: 8px;" />
+    <div class="page-header">
+      <div class="page-title">
+        <appstore-outlined class="header-icon" />
         工薪预算驾驶舱
       </div>
     </div>
@@ -94,12 +94,15 @@
 
     <!-- Section 2: Current Salary Execution & Planning -->
     <div class="section-card no-padding">
-      <div class="section-header-row" style="display: flex; justify-content: space-between; align-items: center; padding-right: 24px;">
+      <div class="section-header-row">
         <div class="section-title-text">当前工薪执行现状及现行规划</div>
-        <a-space>
-          <a-button type="text" size="small" @click="handleCollapseAll">一键折叠</a-button>
-          <a-button type="text" size="small" @click="handleExpandAll">一键展开</a-button>
-        </a-space>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <CombinedActionButton />
+          <a-space>
+            <a-button type="text" size="small" @click="handleCollapseAll">一键折叠</a-button>
+            <a-button type="text" size="small" @click="handleExpandAll">一键展开</a-button>
+          </a-space>
+        </div>
       </div>
       
       <a-table
@@ -118,8 +121,8 @@
         <a-table-column title="部门" data-index="name" :width="200" fixed="left" />
         <a-table-column-group title="2026年" class="header-bg-gray">
           <a-table-column title="预算调整" :width="60" align="center" class="bg-gray-light">
-            <template #default="{ record }">
-              <a-button type="text" size="small" @click="goToBudgetAdjustment(record)"><template #icon><edit-outlined /></template></a-button>
+            <template #default>
+              <a-button type="text" size="small"><template #icon><edit-outlined /></template></a-button>
             </template>
           </a-table-column>
           <a-table-column-group title="HC" class="bg-gray-light">
@@ -143,8 +146,8 @@
             <a-table-column title="全年预算" :width="120" align="right" class="bg-gray-light"><template #default="{record}"><strong>{{ formatMoney(record.values.cost_year) }}</strong></template></a-table-column>
             <a-table-column title="预实比对" :width="100" align="center" class="bg-gray-light">
               <template #default="{record}">
-        <a @click="openModal(record)">预实比对</a>
-      </template>
+                <a @click="openModal(record)">预实比对</a>
+              </template>
             </a-table-column>
           </a-table-column-group>
         </a-table-column-group>
@@ -246,7 +249,7 @@
             </div>
           </div>
           <div>
-            <a-button class="btn-white-custom">预算变更记录</a-button>
+            <a-button>预算变更记录</a-button>
             <a-button type="text" @click="modalVisible = false"><close-outlined /></a-button>
           </div>
         </div>
@@ -288,8 +291,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useSalaryBudgetStore } from '../stores/salaryBudget'
+import CombinedActionButton from '../components/CombinedActionButton.vue'
 import {
   AppstoreOutlined,
   ExportOutlined,
@@ -300,11 +304,16 @@ import {
 } from '@ant-design/icons-vue'
 
 const store = useSalaryBudgetStore()
-const router = useRouter()
+const route = useRoute()
 
-const goToBudgetAdjustment = (record: any) => {
-  router.push({ path: '/budget-adjust', query: { rowId: record.id } })
-}
+// Check for rowId in query
+onMounted(() => {
+  if (route.query.rowId) {
+    console.log('Navigated with rowId:', route.query.rowId)
+    // Here you could trigger a search or highlight the row
+  }
+  handleExpandAll()
+})
 
 // --- Pending Applications Data ---
 const pendingData = [
@@ -403,10 +412,6 @@ const handleCollapseAll = () => {
   expandedKeys.value = []
 }
 
-onMounted(() => {
-  handleExpandAll()
-})
-
 const onExpand = (expanded: boolean, record: any) => {
   store.toggleRow(record.id)
   if (expanded) {
@@ -471,10 +476,6 @@ const generateModalData = () => {
     return !(cur === 0 && tgt === 0)
   })
   
-  // Sync select options with available groups (Optional: update modalEmployeeTypes if selection is invalid?)
-  // Requirement 2: "弹窗中应完全隐藏... 筛选项应同步移除"
-  // We can filter the options in template using availableGroups.
-  
   // Filter based on user selection
   const groups = modalEmployeeTypes.value.length > 0 
     ? availableGroups.filter(g => modalEmployeeTypes.value.includes(g.type))
@@ -486,12 +487,8 @@ const generateModalData = () => {
 
   const result: any[] = []
   
-  // Requirement 2: 在表格中明确标注每类人员的计算规则 (Add a helper or info logic, here we can assume the UI shows it via tooltip or we can add a description row? 
-  // User says "在表格中明确标注". Maybe add a description text above table or tooltip on row label?
-  // Let's stick to the "Total Salary" vs "Salary" toggle logic which implies the rule.)
-  
   groups.forEach(group => {
-      // Requirement 1: Data Calculation Logic
+      // Data Calculation Logic
       // Jan = Current
       const janVal = record.values.h26_cur[group.index]
       // Dec = Target
@@ -501,12 +498,7 @@ const generateModalData = () => {
       let totalSalaryTrend: number[] = []
       
       if (isBudget) {
-         // Requirement 4: Monthly Budget Distribution
-         // Must follow HC trend. Sum must equal Annual Budget.
-         // "2026 Annual Data must match outer Annual Budget"
-         // Outer Annual Budget is record.values.cost_year.
-         
-         // 1. Calculate Total Cost Share for this group (proportional to HC)
+         // Calculate Total Cost Share for this group (proportional to HC)
          const groupAvgHC = (janVal + decVal) / 2
          let totalAvgHC = 0
          availableGroups.forEach(g => {
@@ -516,7 +508,7 @@ const generateModalData = () => {
          const ratio = totalAvgHC > 0 ? groupAvgHC / totalAvgHC : 0
          const groupTotalBudget = record.values.cost_year * ratio
          
-         // 2. Distribute Total Cost across 12 months based on HC trend
+         // Distribute Total Cost across 12 months based on HC trend
          const hcTrend = []
          for (let i = 0; i < 12; i++) {
             const val = janVal + (decVal - janVal) * (i / 11)
@@ -537,13 +529,6 @@ const generateModalData = () => {
             totalSalaryTrend[11] = Number((totalSalaryTrend[11] + diff).toFixed(1))
          }
 
-         // Requirement 1: Salary Data vs Total Salary (Cost)
-         // Check modalBudgetType ('salary' or 'total')
-         // Rules:
-         // - Reg: Salary = Total * (0.70 ± 0.02)
-         // - Intern: Salary = Total * (0.90 ± 0.02)
-         // - Dispatch/Out/Part: Salary = Total * 1.0
-         
          if (modalBudgetType.value === 'total') {
             currData = totalSalaryTrend
          } else {
@@ -555,44 +540,31 @@ const generateModalData = () => {
                 } else if (group.type === 'intern') {
                     factor = 0.90 + (Math.random() * 0.04 - 0.02) // 0.88 - 0.92
                 }
-                // Dispatch, Out, Part stay 1.0
-                
                 return Number((total * factor).toFixed(1))
             })
          }
          
       } else {
-         // HC Logic: Linear Interpolation (Requirement 1: Monotonic trend, no fluctuations)
-         
-         // Determine trend: increase, decrease, or equal
+         // HC Logic: Linear Interpolation
          const diff = decVal - janVal;
-         
-         // Generate base linear sequence
          const rawData = [];
          for (let i = 0; i < 12; i++) {
             const val = janVal + (diff) * (i / 11);
             rawData.push(val);
          }
-         
-         // Round to integer and enforce monotonic constraint
          currData = rawData.map(v => Math.round(v));
          
-         // Enforce strict monotonicity (no fluctuations)
+         // Enforce strict monotonicity
          if (diff > 0) {
-            // Increasing: ensure prev <= next
             for (let i = 1; i < 11; i++) {
                 if (currData[i] < currData[i-1]) currData[i] = currData[i-1];
             }
-            // Ensure last is exact target (should be >= 11th if diff > 0)
-            if (currData[11] < currData[10]) currData[10] = currData[11]; // Backtrack if needed, or just set last
+            if (currData[11] < currData[10]) currData[10] = currData[11];
          } else if (diff < 0) {
-            // Decreasing: ensure prev >= next
             for (let i = 1; i < 11; i++) {
                 if (currData[i] > currData[i-1]) currData[i] = currData[i-1];
             }
          }
-         
-         // Force exact endpoints
          currData[0] = janVal;
          currData[11] = decVal;
       }
@@ -601,14 +573,9 @@ const generateModalData = () => {
       let usedDataFinal: number[] = []
       
       if (isBudget) {
-           // Define Total Trends for Init and Used (Mock logic consistent with Total View)
-           // Init = 1.02 * Current
-           // Used = 0.9 * Current
            const totalInitTrend = totalSalaryTrend.map(v => Number((v * 1.02).toFixed(1)))
            const totalUsedTrend = totalSalaryTrend.map(v => Number((v * 0.9).toFixed(1)))
            
-           // Apply Ratio if 'salary' selected
-           // Reg: 70%, Intern: 90%, Others: 100%
            const getRatio = () => {
                if (modalBudgetType.value === 'salary') {
                    if (group.type === 'reg') return 0.7;
@@ -623,7 +590,6 @@ const generateModalData = () => {
            usedDataFinal = totalUsedTrend.map(v => Number((v * ratio).toFixed(1)));
            
       } else {
-           // HC Logic (Keep existing)
            const initJan = Math.round(janVal * 1.02);
            const initDec = Math.round(decVal * 1.02);
            const usedJan = Math.round(janVal * 0.9);
@@ -676,13 +642,11 @@ const generateModalData = () => {
              const sum = dataMap[row.key].reduce((a: number, b: number) => a + b, 0)
              item.total = sum.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
              
-             // 修正: 工薪预算模式下，剩余金额的全年合计显示为"-"
              if (modalBudgetType.value === 'total' && row.key === 'remain') {
                item.total = '-'
              }
           }
           
-          // Mark last row of the group for visual separation
           if (idx === rowLabels.length - 1) {
             item.isLastInGroup = true
           }
@@ -781,17 +745,10 @@ const formatNumber = (val: number | string) => {
 }
 
 const shouldShowDash = (month: string, record: any) => {
-  // Logic:
-  // 1. Must be 'total' Budget Type
-  // 2. Must be 'used' or 'remain' Row Label
-  // 3. Month must be April - December
-  
   if (modalBudgetType.value !== 'total') return false
-  if (modalDataType.value !== 'budget') return false // Ensure it's budget mode
+  if (modalDataType.value !== 'budget') return false 
   
   const label = record.label
-  // Labels are: '年初预算金额(万)', '当前预算金额(万)', '已用金额(万)', '剩余金额(万)'
-  // We check for '已用' or '剩余'
   if (!label.includes('已用') && !label.includes('剩余')) return false
   
   const targetMonths = ['四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
@@ -801,215 +758,73 @@ const shouldShowDash = (month: string, record: any) => {
 </script>
 
 <style scoped>
-/* --- Deep Overrides for Pixel Perfect Modal --- */
-
-/* Input Styles */
-:deep(.c-input.ant-input), 
-:deep(.c-input .ant-input) {
-  height: 32px;
-  border-color: #E5E6EB !important;
-  font-size: 13px;
-  background-color: #F7F8FA;
-  color: #1D2129;
-  border-radius: 2px;
-}
-
-/* Select Styles */
-:deep(.ant-select-selector) {
-  height: 32px !important;
-  border-color: #E5E6EB !important;
-  border-radius: 2px !important;
-  font-size: 13px !important;
-  box-shadow: none !important;
-}
-
-:deep(.ant-select-selection-item) {
-  line-height: 30px !important; /* height - 2px border */
-}
-
-/* Button Styles */
-:deep(.ant-btn) {
-  border-radius: 2px;
-  font-size: 13px;
-  box-shadow: none;
-}
-
-/* Custom Button Class */
-.btn-white-custom {
-  height: 32px;
-  border: 1px solid #E5E6EB;
-  background: #fff;
-  color: #1D2129;
-  border-radius: 2px;
-  font-size: 13px;
-  padding: 0 16px;
-  box-shadow: none;
-}
-.btn-white-custom:hover {
-  border-color: #0052D9;
-  color: #0052D9;
-}
-
-/* Modal Table Header Overrides */
-:deep(.modal-table .ant-table-thead > tr > th) {
-  font-weight: 600;
-  font-size: 13px;
-  color: #1D2129;
-  background: #F2F3F5;
-  padding: 12px 16px;
-  border-bottom: 1px solid #E5E6EB;
-  border-right: 1px solid #E5E6EB;
-  text-align: center !important;
-}
-
-/* First Column Header (2026年) - Bold and Gray Bg */
-:deep(.modal-table .ant-table-thead > tr > th:first-child) {
-  font-weight: 700;
-  color: #1D2129;
-  background-color: #F2F3F5;
-}
-
-/* Row Type Styles */
-:deep(.row-init) td {
-  color: #86909C; /* Light Gray */
-  font-weight: 400;
-}
-
-:deep(.row-curr) td,
-:deep(.row-used) td {
-  color: #4E5969; /* Dark Gray */
-  font-weight: 400;
-}
-
-:deep(.row-remain) td {
-  color: #1D2129; /* Black */
-  font-weight: 700;
-  background-color: #FFF7E6 !important; /* Highlight background */
-}
-
-/* Table Body Cell Overrides */
-:deep(.modal-table .ant-table-tbody > tr > td) {
-  padding: 8px 12px;
-  border-bottom: 1px solid #E5E6EB;
-  border-right: 1px solid #E5E6EB;
-  font-size: 12px;
-  color: #1D2129;
-  white-space: nowrap;
-}
-
-/* Row Separator */
-:deep(.modal-row-separator) > td {
-  border-bottom: 12px solid #F7F8FA !important;
-}
-
-/* Group Name Cell Separator (RowSpan cell) */
-:deep(.group-name-cell) {
-  border-bottom: 12px solid #F7F8FA !important;
-  vertical-align: middle !important;
-  background-color: #fff;
-}
-
-:deep(.modal-table) {
-  border: 1px solid #E5E6EB;
-  border-radius: 4px;
-}
-
-/* Hide Ant Table outer border if we want to match HTML table-wrapper border exactly */
-:deep(.modal-table.ant-table-bordered .ant-table-container) {
-  border: none;
-}
-
-/* Remove default Ant Table hover bg if needed, HTML has FBFBFC */
-:deep(.modal-table .ant-table-tbody > tr:hover > td) {
-  background-color: #FBFBFC !important;
-}
-
-/* Tooltip Styles */
-:global(.custom-tooltip .ant-tooltip-inner) {
-  background-color: #fff;
-  color: #1D2129;
-  padding: 12px 16px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  max-width: 320px;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-:global(.custom-tooltip .ant-tooltip-arrow::before) {
-  background-color: #fff;
-}
-
-.tooltip-content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.tooltip-title {
-  font-weight: 600;
-  font-size: 13px;
-  margin-bottom: 4px;
-  color: #1D2129;
-}
-
-.tooltip-item {
-  color: #4E5969;
-}
-
-.tooltip-label {
-  font-weight: 600;
-  color: #1D2129;
-}
-
-/* --- End Overrides --- */
-
+/* 容器样式 */
 .cockpit-container {
-  /* padding: 24px; */
-  /* Parent Dashboard already has padding, maybe just full width */
+  /* 使用系统默认间距 */
 }
 
+.page-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.page-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  margin-right: 24px;
+}
+
+.header-icon {
+  margin-right: 8px;
+}
+
+/* 卡片样式适配 Ant Design */
 .section-card {
   background: #fff;
   border-radius: 4px;
-  padding: 20px;
+  padding: 24px;
   margin-bottom: 24px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .section-card.no-padding {
   padding: 0;
-  padding-bottom: 20px;
+  padding-bottom: 24px;
 }
 
+/* 标题样式适配 */
 .section-title {
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 500;
   margin-bottom: 16px;
   display: flex;
   align-items: center;
+  color: rgba(0, 0, 0, 0.88);
 }
 
 .count {
   margin-left: 8px;
-  font-weight: 400;
-  color: #4E5969;
+  font-weight: normal;
+  color: rgba(0, 0, 0, 0.45);
   font-size: 14px;
 }
 
 .icon-btn-right {
   margin-left: auto;
-  color: #4E5969;
+  color: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.icon-btn-right:hover {
+  color: rgba(0, 0, 0, 0.88);
 }
 
-.sub-header {
-  font-weight: 400;
-  font-size: 11px;
-  color: #86909C;
-}
-
+/* 辅助文本样式 */
 .text-bold {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .text-red {
@@ -1032,61 +847,57 @@ const shouldShowDash = (month: string, record: any) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 .section-header-row {
-  padding: 20px;
+  padding: 16px 24px;
   border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .section-title-text {
-  font-weight: 700;
+  font-weight: 500;
   font-size: 16px;
+  color: rgba(0, 0, 0, 0.88);
 }
 
+/* 业务背景色 */
 .header-bg-gray {
-  background-color: #f7f9fc !important;
+  background-color: #fafafa !important;
 }
 
 .header-bg-blue {
-  background-color: #e6f2ff !important;
+  background-color: #e6f7ff !important; 
 }
 
 .bg-blue-light {
-  background-color: #e6f2ff !important;
+  background-color: #e6f7ff !important;
 }
 
-/* Padding optimization - Exclude hidden measure rows by requiring ant-table-cell class */
-:deep(.ant-table-thead > tr > th),
-:deep(.ant-table-tbody > tr > td.ant-table-cell) {
-  padding: 12px 16px !important;
+.bg-gray-light {
+  background-color: #fafafa !important;
 }
 
-/* Vertical separator for 2026/2027 */
+/* 表格样式适配 */
+:deep(.ant-table-thead > tr > th) {
+  font-weight: 500;
+}
+
+/* 垂直分割线 */
 :deep(.header-bg-gray) {
-  border-right: 2px solid #e8e8e8 !important;
+  border-right: 1px solid #f0f0f0 !important;
 }
 :deep(.header-bg-blue) {
-  border-left: 2px solid #e8e8e8 !important; 
+  border-left: 1px solid #f0f0f0 !important; 
 }
 
-/* Fix for Group Header border */
-:deep(.ant-table-thead > tr > th.border-right) {
-  border-right: 1px solid #e8e8e8 !important;
-}
-
-/* Group Row Styles - Synced with Dashboard.vue */
+/* Group Row Styles */
 :deep(.group-row) > td {
-  background-color: #f5f5f5 !important;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.88); 
-  transition: all 0.2s;
-  border-bottom: 1px dashed #d9d9d9 !important; 
-}
-
-:deep(.group-row:hover) > td {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05) inset !important;
+  background-color: #fafafa !important;
+  font-weight: 500;
 }
 
 /* Modal Styles */
@@ -1106,7 +917,7 @@ const shouldShowDash = (month: string, record: any) => {
 
 .filter-row {
   display: flex;
-  gap: 24px;
+  gap: 16px;
   align-items: center;
 }
 
@@ -1117,12 +928,11 @@ const shouldShowDash = (month: string, record: any) => {
 
 .filter-label {
   margin-right: 8px;
-  font-weight: 600;
+  color: rgba(0, 0, 0, 0.88);
 }
 
 .c-input {
-  width: 240px;
-  background: #F7F8FA;
+  width: 200px;
 }
 
 .modal-body {
@@ -1132,115 +942,67 @@ const shouldShowDash = (month: string, record: any) => {
 .vertical-text {
   writing-mode: vertical-rl;
   text-orientation: upright;
-  letter-spacing: 4px;
-  font-weight: 600;
-  width: 20px;
+  letter-spacing: 2px;
+  font-weight: 500;
   margin: 0 auto;
 }
 
-/* Deep overrides for table header background colors if scoped doesn't apply to a-table-column-group */
-:deep(.header-bg-gray) {
-  background-color: #f7f9fc !important;
-  border-right: 2px solid #e8e8e8 !important; /* Visual separator between years */
-}
-:deep(.header-bg-blue) {
-  background-color: #e6f2ff !important;
-  border-left: 2px solid #e8e8e8 !important;
-}
-:deep(.bg-blue-light) {
-  background-color: #e6f2ff !important;
+/* Tooltip Styles */
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-:deep(.bg-gray-light) {
-  background-color: #f7f9fc !important;
+.tooltip-title {
+  font-weight: 500;
+  margin-bottom: 4px;
 }
 
-/* Ensure column headers within groups inherit or have specific backgrounds */
-:deep(.header-bg-gray th),
-:deep(.header-bg-gray td) {
-  background-color: #f7f9fc;
+.tooltip-item {
+  color: rgba(255, 255, 255, 0.85);
 }
 
-:deep(.header-bg-blue th),
-:deep(.header-bg-blue td) {
-  background-color: #e6f2ff;
+.tooltip-label {
+  font-weight: 500;
 }
 
-/* Hover effects */
-:deep(.ant-table-tbody > tr:hover > td) {
-  background-color: #fafafa !important; /* Light gray hover for all */
-}
-/* Ensure hover overrides background colors of specific columns if needed, or let transparency work. 
-   Ant Design Table hover usually applies to td. If td has bg color !important, hover might not show.
-   Let's avoid !important on td background if possible, or use a darker hover.
-*/
-:deep(.ant-table-tbody > tr:hover > td.bg-blue-light) {
-  background-color: #e6f2ff !important; /* Keep consistent blue for hover */
-}
-:deep(.ant-table-tbody > tr:hover > td.bg-gray-light) {
-  background-color: #f7f9fc !important; /* Keep consistent gray for hover */
+/* Modal Table Deep Styles */
+:deep(.modal-table .ant-table-thead > tr > th) {
+  text-align: center;
+  background: #F2F3F5;
 }
 
-/* Global Table Cell Styles for Optimization */
-:deep(.ant-table-cell) {
-  white-space: nowrap;
+:deep(.row-init) td {
+  color: #86909C; 
 }
 
-/* Compact Pending Table */
-:deep(.pending-table) {
-  width: 100%;
-  table-layout: fixed; /* Fix layout for ellipsis */
+:deep(.row-curr) td,
+:deep(.row-used) td {
+  color: #4E5969;
 }
 
-:deep(.pending-table .ant-table-thead > tr > th),
-:deep(.pending-table .ant-table-tbody > tr > td.ant-table-cell) {
-  padding: 4px 8px !important; /* Further reduced padding */
-  font-size: 12px;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+:deep(.row-remain) td {
+  font-weight: 700;
+  background-color: #FFF7E6 !important;
 }
 
-:deep(.pending-table .ant-table-thead > tr > th) {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
+:deep(.modal-row-separator) > td {
+  border-bottom: 12px solid #F7F8FA !important;
 }
 
-/* Ensure tooltips or title attributes work by not overriding pointer events */
-:deep(.pending-table .ant-table-tbody > tr > td.ant-table-cell) {
-  cursor: default;
-}
-
-/* Compact Budget Tree Table */
-:deep(.budget-tree-table .ant-table-thead > tr > th),
-:deep(.budget-tree-table .ant-table-tbody > tr > td.ant-table-cell) {
-  padding: 4px 6px !important; /* Even tighter padding horizontally */
-  font-size: 12px;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
-/* Optimization for max-content scroll with tight spacing */
-:deep(.budget-tree-table) {
-  /* No fixed layout here as we rely on scroll x for many columns */
-}
-
-/* Current Month Column Emphasis */
-:deep(.current-month-cell),
-:deep(.current-month-header) {
-  /* Subtle border enhancement using inset shadow to prevent layout shifts */
-  box-shadow: inset 1px 0 0 #C9CDD4, inset -1px 0 0 #C9CDD4 !important;
+:deep(.group-name-cell) {
+  border-bottom: 12px solid #F7F8FA !important;
+  vertical-align: middle !important;
+  background-color: #fff;
 }
 
 :deep(.current-month-cell) {
-  font-weight: 600; /* Slightly bolder (+100-200) */
-  background-color: #F7F8FA; /* Subtle background highlight */
+  font-weight: 600;
+  background-color: #F7F8FA; 
 }
 
 :deep(.current-month-header) {
-  background-color: #E5E6EB !important; /* Slightly darker header bg */
+  background-color: #E5E6EB !important;
 }
-
 </style>

@@ -22,6 +22,8 @@
             <a-menu-item key="3-1">审批中心</a-menu-item>
             <a-menu-item key="3-2">工薪预算驾驶舱</a-menu-item>
             <a-menu-item key="3-3">预算划转</a-menu-item>
+            <a-menu-item key="3-4" v-if="userStore.hasPermission('finance')">预算调整</a-menu-item>
+            <a-menu-item key="3-5" v-if="userStore.hasPermission('finance')">预算编制/调整</a-menu-item>
           </a-sub-menu>
         </a-menu>
       </div>
@@ -59,10 +61,12 @@ import {
   UserOutlined,
   HistoryOutlined
 } from '@ant-design/icons-vue'
+import { useUserStore } from '../stores/user'
 
 const router = useRouter()
 const route = useRoute()
-const currentMenu = ref<string[]>(['3-1'])
+const userStore = useUserStore()
+const currentMenu = ref<string[]>(['3-2'])
 
 const handleMenuClick = ({ key }: { key: string }) => {
   if (key === '3-1') {
@@ -71,10 +75,13 @@ const handleMenuClick = ({ key }: { key: string }) => {
     router.push('/salary-budget')
   } else if (key === '3-3') {
     router.push('/budget-transfer')
+  } else if (key === '3-4') {
+    router.push('/budget-adjust')
+  } else if (key === '3-5') {
+    router.push('/budget-planning')
   }
 }
 
-// Sync menu with route
 watch(
   () => route.path,
   (path) => {
@@ -84,6 +91,10 @@ watch(
       currentMenu.value = ['3-2']
     } else if (path.includes('budget-transfer')) {
       currentMenu.value = ['3-3']
+    } else if (path.includes('budget-adjust')) {
+      currentMenu.value = ['3-4']
+    } else if (path.includes('budget-planning')) {
+      currentMenu.value = ['3-5']
     }
   },
   { immediate: true }
