@@ -26,7 +26,7 @@
         :scroll="{ x: 'max-content', y: 400 }"
       >
         <!-- Custom Body Cell for Salary Inputs -->
-        <template #bodyCell="{ column, text, record }">
+        <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'month'">
             <a-input-number
               v-model:value="record.salary[column.dataIndex]"

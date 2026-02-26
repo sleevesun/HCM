@@ -199,7 +199,7 @@ const generateMockData = () => {
          name: 'HC',
          isSummary: true,
          // HC values would be counts, mocking constant here or calculating
-         ...Array.from({ length: 12 }).reduce((acc: any, _, i) => { acc[`m${i+1}`] = 46; return acc }, {}),
+         ...Array.from({ length: 12 }).reduce((acc: any, _, i) => { acc[`m${i+1}`] = 46; return acc }, {}) as any,
          total: 46
        }
        
