@@ -26,7 +26,7 @@
         :scroll="{ x: 'max-content', y: 400 }"
       >
         <!-- Custom Body Cell for Project Tags Inputs -->
-        <template #bodyCell="{ column, text, record }">
+        <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'month'">
             <a-select
               v-model:value="record.tags[column.dataIndex]"

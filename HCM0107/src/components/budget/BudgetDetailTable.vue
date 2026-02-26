@@ -82,7 +82,7 @@ import type { BudgetItem } from '../../mocks/budgetData';
 import PersonnelPopover from './PersonnelPopover.vue';
 import BudgetCell from './BudgetCell.vue';
 
-const props = defineProps<{
+defineProps<{
   title: string;
   data: BudgetItem[];
   editable?: boolean;

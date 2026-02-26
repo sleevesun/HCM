@@ -108,9 +108,11 @@ import { ref, computed } from 'vue'
 
 // --- Mock Data Construction ---
 const generateMockData = () => {
-  const depts = [
-    { name: '星云工作室', type: 'root', children: ['运营部', '测试部', '策划部', '客户端', '服务器', '美术部'] }
-  ]
+  // const depts = [
+  //   { name: '星云工作室', type: 'root', children: ['运营部', '测试部', '策划部', '客户端', '服务器', '美术部'] }
+  // ]
+
+
   
   const rawData = [
      { dept: '星云工作室', total: 3895.3, children: [
@@ -152,7 +154,7 @@ const generateMockData = () => {
           ...Array.from({ length: 12 }).reduce((acc: any, _, i) => {
              acc[`m${i+1}`] = emp.salary
              return acc
-          }, {}),
+          }, {}) as any,
           total: (emp.salary * 12).toFixed(1)
        }))
        
@@ -164,7 +166,7 @@ const generateMockData = () => {
          ...Array.from({ length: 12 }).reduce((acc: any, _, i) => {
              acc[`m${i+1}`] = children.reduce((sum: number, c: any) => sum + Number(c[`m${i+1}`]), 0).toFixed(1)
              return acc
-          }, {}),
+          }, {}) as any,
           total: children.reduce((sum: number, c: any) => sum + Number(c.total), 0).toFixed(1)
        }
     } 
@@ -176,7 +178,7 @@ const generateMockData = () => {
        const monthlyTotals = Array.from({ length: 12 }).reduce((acc: any, _, i) => {
            acc[`m${i+1}`] = children.reduce((sum: number, c: any) => sum + Number(c[`m${i+1}`]), 0).toFixed(1)
            return acc
-       }, {})
+       }, {}) as any
        const annualTotal = children.reduce((sum: number, c: any) => sum + Number(c.total), 0).toFixed(1)
 
        // Transform Root Node into a flattened structure with summary rows if needed
@@ -338,7 +340,7 @@ const columns = [
   }
 ]
 
-const getPopupContainer = (triggerNode: HTMLElement) => {
+const getPopupContainer = (_triggerNode: HTMLElement) => {
   return document.body
 }
 </script>

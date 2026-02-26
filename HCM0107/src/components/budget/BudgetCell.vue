@@ -40,11 +40,11 @@ const emit = defineEmits(['update:salary', 'update:project']);
 const localSalary = ref(props.salary);
 const localProject = ref(props.project);
 
-const projectOptions = [
-  { value: '项目A', label: '项目A' },
-  { value: '项目B', label: '项目B' },
-  { value: '项目C', label: '项目C' },
-];
+// const projectOptions = [
+//   { value: '项目A', label: '项目A' },
+//   { value: '项目B', label: '项目B' },
+//   { value: '项目C', label: '项目C' },
+// ];
 
 watch(() => props.salary, (val) => {
   localSalary.value = val;

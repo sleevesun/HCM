@@ -30,8 +30,8 @@
           <template v-if="column.key === 'month'">
             <a-input-number
               v-model:value="record.salary[column.dataIndex]"
-              :formatter="value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-              :parser="value => value.replace(/\$\s?|(,*)/g, '')"
+              :formatter="(value: any) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+              :parser="(value: any) => value.replace(/\$\s?|(,*)/g, '')"
               :precision="2"
               style="width: 100%"
               placeholder="0.00"
@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, reactive } from 'vue'
+import { ref, watch } from 'vue'
 
 const props = defineProps<{
   open: boolean
@@ -111,8 +111,7 @@ const columns = [
     key: 'action',
     width: 100,
     fixed: 'right',
-    align: 'center',
-    title: '' 
+    align: 'center'
   }
 ]
 

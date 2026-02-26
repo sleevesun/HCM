@@ -22,7 +22,7 @@
             :expandIconColumnIndex="0"
           >
             <!-- Custom Cell for Diff Columns -->
-            <template #bodyCell="{ column, text, record }">
+            <template #bodyCell="{ column, text }">
               <template v-if="['hc.diff.regular', 'hc.diff.other', 'monthly_budget.diff', 'annual_budget.diff'].includes(column.dataIndex)">
                 <span :class="getDiffClass(text)">{{ formatDiff(text) }}</span>
               </template>
@@ -99,8 +99,7 @@ import BeforeApplicationDetail from '../components/BeforeApplicationDetail.vue'
 import CombinedActionButton from '../components/CombinedActionButton.vue'
 import {
   DownloadOutlined,
-  ImportOutlined,
-  EditOutlined
+  ImportOutlined
 } from '@ant-design/icons-vue'
 
 const router = useRouter()

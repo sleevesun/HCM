@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, nextTick } from 'vue'
+import { ref, reactive } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 import SalaryEditModal from './SalaryEditModal.vue'
 import ProjectTagEditModal from './ProjectTagEditModal.vue'

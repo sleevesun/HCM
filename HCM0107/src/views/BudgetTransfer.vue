@@ -513,11 +513,11 @@ const targetError = computed(() => {
 //   return false 
 // })
 
-const selectedHcCost = computed(() => {
-  return vacantHcList.value
-    .filter(item => formState.selectedHcKeys.includes(item.key))
-    .reduce((sum, item) => sum + item.cost, 0)
-})
+// const selectedHcCost = computed(() => {
+//   return vacantHcList.value
+//     .filter(item => formState.selectedHcKeys.includes(item.key))
+//     .reduce((sum, item) => sum + item.cost, 0)
+// })
 
 const selectedHcStats = computed(() => {
   const stats: Record<string, { count: number; totalSalary: number; totalCost: number }> = {}
@@ -705,7 +705,7 @@ const hcColumns = [
     key: `month_${i}`,
     width: 80,
     align: 'right' as const,
-    customRender: ({ text, record }: any) => {
+    customRender: ({ text }: any) => {
         // Special render logic handled in template slot, but this helps column def completeness
         return text
     }
