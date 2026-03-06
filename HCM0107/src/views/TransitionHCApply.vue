@@ -7,7 +7,7 @@ import TransitionAddRowButton from '../components/TransitionAddRowButton.vue'
 import TransitionHCStats from '../components/TransitionHCStats.vue'
 import ApplicationReasonInput from '../components/ApplicationReasonInput.vue'
 import FlowReturnButton from '../components/FlowReturnButton.vue'
-import { searchStaff, type StaffInfo } from '../mocks/budgetData'
+import { searchStaff } from '../mocks/budgetData'
 import {
   fetchDepartmentTransitionHcQuota,
   fetchValidTransitionHcCount,
@@ -130,14 +130,15 @@ const getGroupCategory = (deptName: string) => {
 const handlePersonChange = (val: string, row: TransitionHCRow) => {
   const person = row.personOptions.find((item) => item.empId === val)
   if (!person) return
+  const deptName = person.deptName ?? ''
   row.fieldLoading = true
   setTimeout(() => {
-    row.deptName = person.deptName
-    row.projectTag = person.projectTag
-    row.rank = person.rank
-    row.socialLocation = person.socialLocation
-    row.workLocation = person.workLocation
-    row.groupCategory = getGroupCategory(person.deptName)
+    row.deptName = deptName
+    row.projectTag = person.projectTag ?? ''
+    row.rank = person.rank ?? ''
+    row.socialLocation = person.socialLocation ?? ''
+    row.workLocation = person.workLocation ?? ''
+    row.groupCategory = getGroupCategory(deptName)
     row.salaryDisplay = person.salaryBase !== undefined
       ? Math.round(person.salaryBase * 10000).toLocaleString('zh-CN', { maximumFractionDigits: 0 })
       : '-'

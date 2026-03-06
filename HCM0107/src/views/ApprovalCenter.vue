@@ -587,7 +587,7 @@ const handleViewDetails = (record: DeptNode) => {
 import { useRouter } from 'vue-router'
 const router = useRouter()
 
-const handleViewTransitionDetails = (record: TransitionHcRecord) => {
+const handleViewTransitionDetails = (_record: TransitionHcRecord) => {
   if (window.innerWidth <= 768) {
     router.push('/transition-hc-approval-mobile')
     return

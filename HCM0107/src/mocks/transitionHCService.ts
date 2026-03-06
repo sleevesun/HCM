@@ -15,7 +15,16 @@ export interface TransitionHCRow {
   salaryDisplay?: string
   searchLoading?: boolean
   fieldLoading?: boolean
-  personOptions: Array<{ empId: string; name: string }>
+  personOptions: Array<{
+    empId: string
+    name: string
+    deptName?: string
+    projectTag?: string
+    rank?: string
+    socialLocation?: string
+    workLocation?: string
+    salaryBase?: number
+  }>
   searchTimer?: ReturnType<typeof setTimeout>
 }
 

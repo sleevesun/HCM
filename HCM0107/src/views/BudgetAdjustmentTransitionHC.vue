@@ -383,7 +383,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, nextTick } from "vue";
+import { ref, reactive, nextTick } from "vue";
 import {
   AppstoreOutlined,
   DownloadOutlined,
