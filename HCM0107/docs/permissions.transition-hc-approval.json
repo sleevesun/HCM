@@ -1,0 +1,7 @@
+{
+  "code": "transition_hc_approval_view",
+  "name": "过渡期HC审批查看",
+  "type": "page",
+  "path": "/transition-hc-approval",
+  "description": "允许查看过渡期HC审批页面及流程概览"
+}

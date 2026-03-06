@@ -1,0 +1,28 @@
+alerts:
+  - name: transition_hc_quota_p99_latency
+    metric: api_transition_hc_quota_latency_p99_ms
+    threshold: 200
+    condition: ">"
+    duration: 5m
+    severity: warning
+
+  - name: transition_hc_quota_timeout_rate
+    metric: api_transition_hc_quota_timeout_rate
+    threshold: 0
+    condition: ">"
+    duration: 3m
+    severity: critical
+
+  - name: transition_hc_quota_recalc_failed
+    metric: api_transition_hc_admin_recalc_failed_count
+    threshold: 0
+    condition: ">"
+    duration: 1m
+    severity: warning
+
+  - name: transition_hc_quota_daily_check_repaired
+    metric: transition_hc_daily_check_repaired_count
+    threshold: 0
+    condition: ">"
+    duration: 1d
+    severity: info

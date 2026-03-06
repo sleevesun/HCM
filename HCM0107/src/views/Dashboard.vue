@@ -24,6 +24,9 @@
             <a-menu-item key="3-3">预算划转</a-menu-item>
             <a-menu-item key="3-4" v-if="userStore.hasPermission('finance')">预算调整</a-menu-item>
             <a-menu-item key="3-5" v-if="userStore.hasPermission('finance')">预算编制/调整</a-menu-item>
+            <a-menu-item key="3-6" v-if="userStore.hasPermission('finance')">过渡期HC申请</a-menu-item>
+            <a-menu-item key="3-7" v-if="userStore.hasPermission('finance')">过渡期HC审批</a-menu-item>
+            <a-menu-item key="3-8" v-if="userStore.hasPermission('finance')">预算编制（过渡期HC）</a-menu-item>
           </a-sub-menu>
         </a-menu>
       </div>
@@ -79,6 +82,12 @@ const handleMenuClick = ({ key }: { key: string }) => {
     router.push('/budget-adjust')
   } else if (key === '3-5') {
     router.push('/budget-planning')
+  } else if (key === '3-6') {
+    router.push('/transition-hc-apply')
+  } else if (key === '3-7') {
+    router.push('/transition-hc-approval')
+  } else if (key === '3-8') {
+    router.push('/budget-adjust-transition-hc')
   }
 }
 
@@ -95,6 +104,12 @@ watch(
       currentMenu.value = ['3-4']
     } else if (path.includes('budget-planning')) {
       currentMenu.value = ['3-5']
+    } else if (path.includes('transition-hc-apply')) {
+      currentMenu.value = ['3-6']
+    } else if (path.includes('transition-hc-approval')) {
+      currentMenu.value = ['3-7']
+    } else if (path.includes('budget-adjust-transition-hc')) {
+      currentMenu.value = ['3-8']
     }
   },
   { immediate: true }

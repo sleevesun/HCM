@@ -3,7 +3,18 @@
   <div class="budget-detail-table">
     <div class="detail-header">
       <div class="title-row">
-        <span class="section-title">{{ title }}</span>
+        <div class="left-header">
+          <span class="section-title">{{ title }}</span>
+          <a-button 
+            v-if="!isAfterApplication"
+            type="link" 
+            size="small" 
+            class="select-all-btn"
+            @click="toggleSelectAll"
+          >
+            {{ isAllSelected ? '取消全选' : '全选' }}
+          </a-button>
+        </div>
         <div class="header-actions">
            <a-input-search
               v-model:value="searchText"
@@ -29,6 +40,21 @@
         <template #default="{ record }">
           <div class="name-cell">
             <template v-if="record.type === 'person'">
+               <template v-if="!isAfterApplication">
+                 <a-checkbox 
+                   :checked="selectedIds.has(record.id)"
+                   @change="(e: any) => toggleSelection(record.id, e.target.checked)"
+                   class="row-checkbox"
+                 />
+               </template>
+               <template v-else>
+                 <a-tooltip title="修改">
+                   <edit-outlined class="action-icon edit-icon" />
+                 </a-tooltip>
+                 <a-tooltip title="删除" v-if="record.name === 'NEW HC'">
+                   <delete-outlined class="action-icon delete-icon danger" />
+                 </a-tooltip>
+               </template>
                <span class="emp-tag" :class="record.tag" style="margin-right: 8px; margin-left: 0; text-align: left;">{{ record.tagName }}</span>
                <div style="flex: 1; text-align: right;">
                  <PersonnelPopover :name="record.name" :tag="record.tagName" />
@@ -77,18 +103,58 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import type { BudgetItem } from '../../mocks/budgetData';
 import PersonnelPopover from './PersonnelPopover.vue';
 import BudgetCell from './BudgetCell.vue';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons-vue';
 
-defineProps<{
+const props = defineProps<{
   title: string;
   data: BudgetItem[];
   editable?: boolean;
+  isAfterApplication?: boolean;
 }>();
 
 const searchText = ref('');
+const selectedIds = ref(new Set<string>());
+
+// Flatten data to get all person items
+const allPersonIds = computed(() => {
+  const ids: string[] = [];
+  const traverse = (items: BudgetItem[]) => {
+    items.forEach(item => {
+      if (item.type === 'person') {
+        ids.push(item.id);
+      }
+      if (item.children) {
+        traverse(item.children);
+      }
+    });
+  };
+  traverse(props.data);
+  return ids;
+});
+
+const isAllSelected = computed(() => {
+  return allPersonIds.value.length > 0 && allPersonIds.value.every(id => selectedIds.value.has(id));
+});
+
+const toggleSelection = (id: string, checked: boolean) => {
+  if (checked) {
+    selectedIds.value.add(id);
+  } else {
+    selectedIds.value.delete(id);
+  }
+};
+
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedIds.value.clear();
+  } else {
+    allPersonIds.value.forEach(id => selectedIds.value.add(id));
+  }
+};
 
 const formatMoney = (val: number) => {
   return val?.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || '-';
@@ -127,6 +193,18 @@ const updateProject = (record: BudgetItem, month: number, val: string) => {
   align-items: center;
 }
 
+.left-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.select-all-btn {
+  font-size: 12px;
+  padding: 0;
+  height: auto;
+}
+
 .section-title {
   font-weight: 500;
   font-size: 14px;
@@ -136,6 +214,21 @@ const updateProject = (record: BudgetItem, month: number, val: string) => {
 .name-cell {
   display: flex;
   align-items: center;
+}
+
+.row-checkbox {
+  margin-right: 8px;
+}
+
+.action-icon {
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 8px;
+  color: #1890ff;
+}
+
+.action-icon.danger {
+  color: #ff4d4f;
 }
 
 .group-name {

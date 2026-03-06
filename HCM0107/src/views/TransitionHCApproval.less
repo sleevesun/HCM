@@ -1,0 +1,29 @@
+@transition-hc-border-color: #f0f0f0;
+@transition-hc-title-color: #1f1f1f;
+@transition-hc-table-head-bg: #f5f7fa;
+@transition-hc-table-border: #ebeef5;
+@transition-hc-radius: 8px;
+
+.transition-hc-approval {
+  .section-card {
+    border: 1px solid @transition-hc-border-color;
+    border-radius: @transition-hc-radius;
+    padding: 12px 16px;
+  }
+
+  .section-title {
+    margin: 0 0 12px;
+    color: @transition-hc-title-color;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .readonly-table {
+    border: 1px solid @transition-hc-table-border;
+    box-shadow: none;
+  }
+
+  .readonly-table thead th {
+    background: @transition-hc-table-head-bg;
+  }
+}

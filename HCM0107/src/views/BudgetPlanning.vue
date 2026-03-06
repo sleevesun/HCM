@@ -52,18 +52,18 @@
           </a-button>
         </div>
         <div class="right-btn-group">
-          <CombinedActionButton />
-          <a-button>HC增减</a-button>
           <a-button>不变</a-button>
+          <a-button>过渡期HC</a-button>
+          <a-button>HC增减</a-button>
+          <CombinedActionButton />
         </div>
       </div>
 
       <!-- 区块 3: 申请通过后明细 -->
-      <section class="content-card" data-testid="after-approve">
+      <section class="content-card fixed-height-section" data-testid="after-approve">
         <h2>申请通过后明细</h2>
         <div class="card-body">
-          <!-- Content placeholder -->
-          <p>申请通过后明细内容区域</p>
+          <AfterApplicationDetail />
         </div>
       </section>
     </main>
@@ -96,6 +96,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BeforeApplicationDetail from '../components/BeforeApplicationDetail.vue'
+import AfterApplicationDetail from '../components/AfterApplicationDetail.vue'
 import CombinedActionButton from '../components/CombinedActionButton.vue'
 import {
   DownloadOutlined,
@@ -445,6 +446,23 @@ const getDiffClass = (val: number) => {
 
   .btn {
     width: 50% !important; /* 按钮宽度自适应为 50% */
+  }
+
+  /* Middle actions responsive */
+  .middle-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .left-btn-group,
+  .right-btn-group {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .right-btn-group {
+    justify-content: flex-end;
   }
 }
 

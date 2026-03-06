@@ -6,186 +6,253 @@
         <appstore-outlined style="margin-right: 8px;" />
         审批中心
       </div>
-      <a-radio-group v-model:value="approvalStatus" button-style="solid">
-        <a-radio-button value="pending">待审批</a-radio-button>
-        <a-radio-button value="approved">已审批</a-radio-button>
-      </a-radio-group>
-    </div>
-
-    <!-- Action Bar -->
-    <div class="action-bar">
-      <div class="filter-compact">
-        <span class="label">申请年度：</span>
-        <a-radio-group v-model:value="selectedYear" button-style="solid" size="small">
-          <a-radio-button value="2026">2026年</a-radio-button>
-          <a-radio-button value="2027">2027年</a-radio-button>
-        </a-radio-group>
-      </div>
-      <a-space>
-        <a-button type="text" @click="handleRepairData">
-           <template #icon><reload-outlined /></template>
-           数据修复
-        </a-button>
-        <a-button type="text" @click="handleCollapseAll">一键折叠</a-button>
-        <a-button type="text" @click="handleExpandAll">一键展开</a-button>
-      </a-space>
-    </div>
-
-    <!-- Tree Table -->
-    <a-table
-      :dataSource="tableData"
-      :expandedRowKeys="expandedKeys"
-      @expand="handleExpand"
-      rowKey="id"
-      :pagination="false"
-      :scroll="{ x: 'max-content' }"
-      bordered
-      size="middle"
-      :rowClassName="getRowClassName"
-    >
-      <a-table-column title="申请部门" dataIndex="name" :width="250" fixed="left" align="left" class="border-right">
-         <template #default="{ record }">
-            <div class="dept-name-cell">
-              <span>{{ record.name }}</span>
-              <a-tooltip 
-                v-if="record.values.approval_status === 'to_approve' || record.values.has_child_to_approve" 
-                title="有新的审批待处理"
-              >
-                <span 
-                  class="notification-dot" 
-                  @click.stop="handleViewDetails(record)"
-                ></span>
-              </a-tooltip>
-            </div>
-         </template>
-      </a-table-column>
       
-      <a-table-column-group title="HC" class="border-right">
-        <a-table-column-group title="申请前">
-          <a-table-column title="正编" :width="80" align="center">
-            <template #default="{ record }">{{ record.values.hc_pre_reg }}</template>
-          </a-table-column>
-          <a-table-column title="其他人员" :width="80" align="center">
-            <template #default="{ record }">{{ record.values.hc_pre_other }}</template>
-          </a-table-column>
-        </a-table-column-group>
-        
-        <a-table-column-group>
-          <template #title>
-            申请通过后 <info-circle-outlined style="color: var(--color-text-3)" />
-          </template>
-          <a-table-column title="正编" :width="80" align="center">
-            <template #default="{ record }">
-              <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
-              <span v-else>{{ record.values.hc_post_reg }}</span>
-            </template>
-          </a-table-column>
-          <a-table-column title="其他人员" :width="80" align="center">
-            <template #default="{ record }">
-              <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
-              <span v-else>{{ record.values.hc_post_other }}</span>
-            </template>
-          </a-table-column>
-        </a-table-column-group>
-        
-        <a-table-column-group>
-          <template #title>
-            变化 <info-circle-outlined style="color: var(--color-text-3)" />
-          </template>
-          <a-table-column title="正编" :width="80" align="center">
-            <template #default="{ record }">
-              <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
-              <span v-else :style="getDiffStyle(record.values.hc_diff_reg)">
-                {{ formatDiff(record.values.hc_diff_reg) }}
-              </span>
-            </template>
-          </a-table-column>
-          <a-table-column title="其他人员" :width="80" align="center">
-            <template #default="{ record }">
-              <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
-              <span v-else :style="getDiffStyle(record.values.hc_diff_other)">
-                {{ formatDiff(record.values.hc_diff_other) }}
-              </span>
-            </template>
-          </a-table-column>
-        </a-table-column-group>
-      </a-table-column-group>
+      <!-- Primary Tabs (Status) -->
+      <a-radio-group v-model:value="approvalStatus" button-style="solid" class="status-tabs">
+        <a-radio-button value="pending">待审批</a-radio-button>
+        <a-radio-button value="processing">进行中</a-radio-button>
+        <a-radio-button value="completed">已完成</a-radio-button>
+      </a-radio-group>
 
-      <a-table-column-group title="月度工薪预算 (万)" class="border-right">
-        <a-table-column title="申请前" :width="100" align="center">
-          <template #default="{ record }">
-            <a-tooltip v-if="record.type === 'group'" title="数据由下级部门汇总计算">
-               <span style="border-bottom: 1px dotted #999; cursor: help;">{{ record.values.month_pre.toFixed(2) }}</span>
-            </a-tooltip>
-            <span v-else>{{ record.values.month_pre.toFixed(2) }}</span>
-          </template>
-        </a-table-column>
-        <a-table-column :width="100" align="center">
-          <template #title>
-            申请通过后 <info-circle-outlined style="color: var(--color-text-3)" />
-          </template>
-          <template #default="{ record }">
-             <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
-             <template v-else>
-                <a-tooltip v-if="record.type === 'group'" title="数据由下级部门汇总计算">
-                   <span style="border-bottom: 1px dotted #999; cursor: help;">{{ record.values.month_post.toFixed(2) }}</span>
+      <!-- Secondary Tabs (Type) -->
+      <div class="type-tabs" role="tablist">
+        <div 
+          class="type-tab-item" 
+          :class="{ active: approvalType === 'budget' }"
+          @click="approvalType = 'budget'"
+          role="tab"
+          :aria-selected="approvalType === 'budget'"
+          tabindex="0"
+          @keydown.enter="approvalType = 'budget'"
+        >
+          部门预算编制/变更
+        </div>
+        <div 
+          class="type-tab-item" 
+          :class="{ active: approvalType === 'transition_hc' }"
+          @click="approvalType = 'transition_hc'"
+          role="tab"
+          :aria-selected="approvalType === 'transition_hc'"
+          tabindex="0"
+          @keydown.enter="approvalType = 'transition_hc'"
+        >
+          过渡期HC申请
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Area: Budget -->
+    <div v-if="approvalType === 'budget'" class="content-area">
+      <!-- Action Bar -->
+      <div class="action-bar">
+        <div class="filter-compact">
+          <span class="label">申请年度：</span>
+          <a-radio-group v-model:value="selectedYear" button-style="solid" size="small">
+            <a-radio-button value="2026">2026年</a-radio-button>
+            <a-radio-button value="2027">2027年</a-radio-button>
+          </a-radio-group>
+        </div>
+        <a-space>
+          <a-button type="text" @click="handleRepairData">
+             <template #icon><reload-outlined /></template>
+             数据修复
+          </a-button>
+          <a-button type="text" @click="handleCollapseAll">一键折叠</a-button>
+          <a-button type="text" @click="handleExpandAll">一键展开</a-button>
+        </a-space>
+      </div>
+
+      <!-- Tree Table -->
+      <a-table
+        :dataSource="tableData"
+        :expandedRowKeys="expandedKeys"
+        @expand="handleExpand"
+        rowKey="id"
+        :pagination="false"
+        :scroll="{ x: 'max-content' }"
+        bordered
+        size="middle"
+        :rowClassName="getRowClassName"
+      >
+        <a-table-column title="申请部门" dataIndex="name" :width="250" fixed="left" align="left" class="border-right">
+           <template #default="{ record }">
+              <div class="dept-name-cell">
+                <span>{{ record.name }}</span>
+                <a-tooltip 
+                  v-if="record.values.approval_status === 'to_approve' || record.values.has_child_to_approve" 
+                  title="有新的审批待处理"
+                >
+                  <span 
+                    class="notification-dot" 
+                    @click.stop="handleViewDetails(record)"
+                  ></span>
                 </a-tooltip>
-                <span v-else>{{ record.values.month_post.toFixed(2) }}</span>
-             </template>
-          </template>
+              </div>
+           </template>
         </a-table-column>
-        <a-table-column title="变化" :width="100" align="center">
-          <template #default="{ record }">
-            <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
-            <span v-else :style="getDiffStyle(record.values.month_diff)">
-              {{ formatDiff(record.values.month_diff) }}
-            </span>
-          </template>
-        </a-table-column>
-      </a-table-column-group>
+        
+        <a-table-column-group title="HC" class="border-right">
+          <a-table-column-group title="申请前">
+            <a-table-column title="正编" :width="80" align="center">
+              <template #default="{ record }">{{ record.values.hc_pre_reg }}</template>
+            </a-table-column>
+            <a-table-column title="其他人员" :width="80" align="center">
+              <template #default="{ record }">{{ record.values.hc_pre_other }}</template>
+            </a-table-column>
+          </a-table-column-group>
+          
+          <a-table-column-group>
+            <template #title>
+              申请通过后 <info-circle-outlined style="color: var(--color-text-3)" />
+            </template>
+            <a-table-column title="正编" :width="80" align="center">
+              <template #default="{ record }">
+                <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
+                <span v-else>{{ record.values.hc_post_reg }}</span>
+              </template>
+            </a-table-column>
+            <a-table-column title="其他人员" :width="80" align="center">
+              <template #default="{ record }">
+                <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
+                <span v-else>{{ record.values.hc_post_other }}</span>
+              </template>
+            </a-table-column>
+          </a-table-column-group>
+          
+          <a-table-column-group>
+            <template #title>
+              变化 <info-circle-outlined style="color: var(--color-text-3)" />
+            </template>
+            <a-table-column title="正编" :width="80" align="center">
+              <template #default="{ record }">
+                <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
+                <span v-else :style="getDiffStyle(record.values.hc_diff_reg)">
+                  {{ formatDiff(record.values.hc_diff_reg) }}
+                </span>
+              </template>
+            </a-table-column>
+            <a-table-column title="其他人员" :width="80" align="center">
+              <template #default="{ record }">
+                <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
+                <span v-else :style="getDiffStyle(record.values.hc_diff_other)">
+                  {{ formatDiff(record.values.hc_diff_other) }}
+                </span>
+              </template>
+            </a-table-column>
+          </a-table-column-group>
+        </a-table-column-group>
 
-      <a-table-column-group title="年度工薪预算 (万)" class="border-right">
-        <a-table-column title="申请前" :width="100" align="center">
-          <template #default="{ record }">{{ record.values.year_pre.toFixed(2) }}</template>
-        </a-table-column>
-        <a-table-column :width="100" align="center">
-          <template #title>
-            申请通过后 <info-circle-outlined style="color: var(--color-text-3)" />
-          </template>
-          <template #default="{ record }">
-             <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
-             <span v-else>{{ record.values.year_post.toFixed(2) }}</span>
-          </template>
-        </a-table-column>
-        <a-table-column title="变化" :width="100" align="center">
-          <template #default="{ record }">
-            <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
-            <span v-else :style="getDiffStyle(record.values.year_diff)">
-              {{ formatDiff(record.values.year_diff) }}
-            </span>
-          </template>
-        </a-table-column>
-      </a-table-column-group>
+        <a-table-column-group title="月度工薪预算 (万)" class="border-right">
+          <a-table-column title="申请前" :width="100" align="center">
+            <template #default="{ record }">
+              <a-tooltip v-if="record.type === 'group'" title="数据由下级部门汇总计算">
+                 <span style="border-bottom: 1px dotted #999; cursor: help;">{{ record.values.month_pre.toFixed(2) }}</span>
+              </a-tooltip>
+              <span v-else>{{ record.values.month_pre.toFixed(2) }}</span>
+            </template>
+          </a-table-column>
+          <a-table-column :width="100" align="center">
+            <template #title>
+              申请通过后 <info-circle-outlined style="color: var(--color-text-3)" />
+            </template>
+            <template #default="{ record }">
+               <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
+               <template v-else>
+                  <a-tooltip v-if="record.type === 'group'" title="数据由下级部门汇总计算">
+                     <span style="border-bottom: 1px dotted #999; cursor: help;">{{ record.values.month_post.toFixed(2) }}</span>
+                  </a-tooltip>
+                  <span v-else>{{ record.values.month_post.toFixed(2) }}</span>
+               </template>
+            </template>
+          </a-table-column>
+          <a-table-column title="变化" :width="100" align="center">
+            <template #default="{ record }">
+              <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
+              <span v-else :style="getDiffStyle(record.values.month_diff)">
+                {{ formatDiff(record.values.month_diff) }}
+              </span>
+            </template>
+          </a-table-column>
+        </a-table-column-group>
 
-      <a-table-column title="操作" :width="80" align="center" fixed="right" class="border-right">
-        <template #default="{ record }">
-          <template v-if="READ_ONLY_IDS.has(record.id)">
-             <span style="color: #999; cursor: not-allowed;">―</span>
+        <a-table-column-group title="年度工薪预算 (万)" class="border-right">
+          <a-table-column title="申请前" :width="100" align="center">
+            <template #default="{ record }">{{ record.values.year_pre.toFixed(2) }}</template>
+          </a-table-column>
+          <a-table-column :width="100" align="center">
+            <template #title>
+              申请通过后 <info-circle-outlined style="color: var(--color-text-3)" />
+            </template>
+            <template #default="{ record }">
+               <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
+               <span v-else>{{ record.values.year_post.toFixed(2) }}</span>
+            </template>
+          </a-table-column>
+          <a-table-column title="变化" :width="100" align="center">
+            <template #default="{ record }">
+              <span v-if="READ_ONLY_IDS.has(record.id)" style="color: #999;">―</span>
+              <span v-else :style="getDiffStyle(record.values.year_diff)">
+                {{ formatDiff(record.values.year_diff) }}
+              </span>
+            </template>
+          </a-table-column>
+        </a-table-column-group>
+
+        <a-table-column title="操作" :width="80" align="center" fixed="right" class="border-right">
+          <template #default="{ record }">
+            <template v-if="READ_ONLY_IDS.has(record.id)">
+               <span style="color: #999; cursor: not-allowed;">―</span>
+            </template>
+            <!-- Check approval status first -->
+            <template v-else-if="record.values.approval_status === 'to_approve'">
+               <a @click="handleViewDetails(record)" style="color: #1890FF;">去审批</a>
+            </template>
+            <template v-else-if="record.values.approval_status === 'approving'">
+               <a @click="handleViewDetails(record)" style="color: #FA8C16;">审批中</a>
+            </template>
+            <template v-else-if="record.values.approval_status === 'approved'">
+               <span style="color: #52c41a;">已完成</span>
+            </template>
+            <!-- If status is none, show '-' -->
+            <template v-else>
+               <span style="color: #999; cursor: not-allowed;">―</span>
+            </template>
           </template>
-          <!-- Check approval status first -->
-          <template v-else-if="record.values.approval_status === 'to_approve'">
-             <a @click="handleViewDetails(record)" style="color: #1890FF;">去审批</a>
+        </a-table-column>
+      </a-table>
+    </div>
+
+    <!-- Content Area: Transition HC -->
+    <div v-else class="content-area transition-hc-list">
+      <div v-if="transitionHcData.length === 0" class="empty-placeholder">
+        <a-empty description="暂无过渡期HC审批数据" />
+      </div>
+      <a-table
+        v-else
+        :dataSource="transitionHcData"
+        :pagination="false"
+        rowKey="id"
+        bordered
+        size="middle"
+      >
+        <a-table-column title="序号" :width="60" align="center">
+          <template #default="{ index }">{{ index + 1 }}</template>
+        </a-table-column>
+        <a-table-column title="申请部门" dataIndex="deptName" :width="200" />
+        <a-table-column title="申请数量" dataIndex="count" :width="100" align="center" />
+        <a-table-column title="申请人" dataIndex="applicant" :width="120" align="center" />
+        <a-table-column title="申请日期" dataIndex="applyDate" :width="120" align="center" />
+        <a-table-column title="当前处理人" dataIndex="handler" :width="120" align="center" />
+        <a-table-column title="操作" :width="100" align="center">
+          <template #default="{ record }">
+            <a @click="handleViewTransitionDetails(record)" style="color: #1890FF;">
+              {{ approvalStatus === 'pending' ? '去审批' : '查看' }}
+            </a>
           </template>
-          <template v-else-if="record.values.approval_status === 'approving'">
-             <a @click="handleViewDetails(record)" style="color: #FA8C16;">审批中</a>
-          </template>
-          <!-- If status is none, show '-' -->
-          <template v-else>
-             <span style="color: #999; cursor: not-allowed;">―</span>
-          </template>
-        </template>
-      </a-table-column>
-    </a-table>
+        </a-table-column>
+      </a-table>
+    </div>
+    <FlowReturnButton />
   </div>
 </template>
 
@@ -196,6 +263,7 @@ import {
   InfoCircleOutlined,
   ReloadOutlined
 } from '@ant-design/icons-vue'
+import FlowReturnButton from '../components/FlowReturnButton.vue'
 import { 
   DEPT_TREE_STRUCTURE, 
   HIDE_ACTION_IDS, 
@@ -221,8 +289,17 @@ interface Metrics {
   year_post: number
   year_diff: number
   
-  approval_status?: 'none' | 'to_approve' | 'approving'
+  approval_status?: 'none' | 'to_approve' | 'approving' | 'approved'
   has_child_to_approve?: boolean
+}
+
+interface TransitionHcRecord {
+  id: string
+  deptName: string
+  count: number
+  applicant: string
+  applyDate: string
+  handler: string
 }
 
 // interface DashboardDeptNode extends DeptNode {
@@ -232,12 +309,65 @@ interface Metrics {
 
 // --- State ---
 const approvalStatus = ref('pending')
+const approvalType = ref('budget')
 const selectedYear = ref('2026')
 const expandedKeys = ref<string[]>([])
 const tableData = ref<DeptNode[]>([])
+const transitionHcData = ref<TransitionHcRecord[]>([])
 
 // --- Data Logic ---
 const STATIC_DATA_STORE: Record<string, DeptNode[]> = {}
+
+const generateTransitionData = (status: string): TransitionHcRecord[] => {
+  if (status === 'pending') {
+    return [
+      {
+        id: 'thc-001',
+        deptName: '星云工作室',
+        count: 2,
+        applicant: '陈力文',
+        applyDate: '2026-03-05',
+        handler: '当前用户'
+      },
+      {
+        id: 'thc-002',
+        deptName: '幻塔工作室',
+        count: 1,
+        applicant: '张御',
+        applyDate: '2026-03-04',
+        handler: '当前用户'
+      }
+    ]
+  }
+
+  if (status === 'processing') {
+    return [
+      {
+        id: 'thc-003',
+        deptName: '艺术平台',
+        count: 3,
+        applicant: '李明',
+        applyDate: '2026-03-03',
+        handler: '当前用户'
+      }
+    ]
+  }
+  
+  if (status === 'completed') {
+    return [
+      {
+        id: 'thc-004',
+        deptName: '运维部',
+        count: 1,
+        applicant: '王强',
+        applyDate: '2026-03-01',
+        handler: '已完成'
+      }
+    ]
+  }
+  
+  return []
+}
 
 const generateStaticData = (year: string): DeptNode => {
   const generateMetrics = (weight: number): Metrics => {
@@ -303,7 +433,7 @@ const generateStaticData = (year: string): DeptNode => {
 
   const processNode = (node: DeptNode, parentId?: string): DeptNode => {
     const newNode = { ...node, children: node.children ? [] : undefined } as DeptNode
-    let status: 'none' | 'to_approve' | 'approving' = 'none'
+    let status: 'none' | 'to_approve' | 'approving' | 'approved' = 'none'
     const shouldHide = HIDE_ACTION_IDS.has(node.id) || (parentId && HIDE_CHILDREN_ACTION_PARENT_IDS.has(parentId))
     
     if (!shouldHide) {
@@ -311,7 +441,22 @@ const generateStaticData = (year: string): DeptNode => {
        for (let i = 0; i < node.id.length; i++) {
          hash = node.id.charCodeAt(i) + ((hash << 5) - hash);
        }
-       status = (Math.abs(hash) % 2 === 0) ? 'to_approve' : 'approving';
+       
+       // Simulate filtering based on selected status
+       // We map random hash to a status, but bias it towards the selected status to ensure we have data
+       const currentStatusFilter = approvalStatus.value;
+       const rand = Math.abs(hash) % 10;
+       
+       if (currentStatusFilter === 'pending') {
+          // Mostly to_approve, some none
+          status = (rand < 7) ? 'to_approve' : 'none';
+       } else if (currentStatusFilter === 'processing') {
+          // Mostly approving
+          status = (rand < 7) ? 'approving' : 'none';
+       } else if (currentStatusFilter === 'completed') {
+          // Mostly approved
+          status = (rand < 7) ? 'approved' : 'none';
+       }
     }
     
     if (node.id === 'hr') status = 'none'
@@ -382,13 +527,20 @@ const generateStaticData = (year: string): DeptNode => {
 
 const refreshData = () => {
   const year = selectedYear.value
-  if (!STATIC_DATA_STORE[year]) {
-    STATIC_DATA_STORE[year] = [generateStaticData(year)]
+  const status = approvalStatus.value
+  const cacheKey = `${year}-${status}`
+  
+  if (!STATIC_DATA_STORE[cacheKey]) {
+    STATIC_DATA_STORE[cacheKey] = [generateStaticData(year)]
   }
-  tableData.value = STATIC_DATA_STORE[year]
+  tableData.value = STATIC_DATA_STORE[cacheKey]
+
+  if (approvalType.value === 'transition_hc') {
+    transitionHcData.value = generateTransitionData(approvalStatus.value)
+  }
 }
 
-watch(selectedYear, () => {
+watch([selectedYear, approvalStatus, approvalType], () => {
   refreshData()
 })
 
@@ -432,6 +584,17 @@ const handleViewDetails = (record: DeptNode) => {
   console.log('View details for:', record.name)
 }
 
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+const handleViewTransitionDetails = (record: TransitionHcRecord) => {
+  if (window.innerWidth <= 768) {
+    router.push('/transition-hc-approval-mobile')
+    return
+  }
+  router.push('/transition-hc-approval')
+}
+
 const getRowClassName = (record: DeptNode) => {
   return record.type === 'group' ? 'group-row' : ''
 }
@@ -451,7 +614,9 @@ const getDiffStyle = (val: number) => {
 <style scoped>
 .page-header {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
   margin-bottom: 20px;
 }
 
@@ -461,7 +626,68 @@ const getDiffStyle = (val: number) => {
   color: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
-  margin-right: 24px;
+  margin: 0;
+}
+
+/* Secondary Tabs Styling */
+.type-tabs {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+  width: 100%;
+}
+
+.type-tab-item {
+  padding: 12px 24px;
+  font-size: 14px;
+  cursor: pointer;
+  position: relative;
+  color: rgba(0, 0, 0, 0.65);
+  transition: all 0.3s;
+  font-weight: 500;
+}
+
+.type-tab-item:hover {
+  color: #1890ff;
+}
+
+.type-tab-item.active {
+  color: #1890ff;
+  font-weight: 600;
+}
+
+.type-tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #1890ff;
+}
+
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.transition-hc-list {
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  min-height: 400px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  flex-direction: column;
+}
+
+.empty-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  width: 100%;
 }
 
 .action-bar {
@@ -540,5 +766,25 @@ const getDiffStyle = (val: number) => {
 .notification-dot:hover {
   transform: scale(1.2);
   transition: transform 0.2s;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    align-items: stretch;
+  }
+  
+  .type-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .type-tab-item {
+    padding: 12px 16px;
+  }
+  
+  .status-tabs {
+    display: flex;
+    overflow-x: auto;
+  }
 }
 </style>
