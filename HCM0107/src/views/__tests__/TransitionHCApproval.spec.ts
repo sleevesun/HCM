@@ -36,10 +36,6 @@ vi.mock('vue-router', () => ({
 const buildWrapper = () => mount(TransitionHCApproval, {
   global: {
     stubs: {
-      DepartmentTreeSelect: {
-        props: ['value', 'disabled'],
-        template: '<input class="dept-tree-stub" :disabled="disabled" />'
-      },
       'a-input': {
         props: ['value', 'disabled'],
         template: '<input class="a-input-stub" :disabled="disabled" :value="value" />'
@@ -98,6 +94,7 @@ describe('TransitionHCApproval', () => {
     fetchDetailMock.mockResolvedValue({
       id: 'THC-001',
       deptId: 'GB-03-星云工作室',
+      deptPath: '游戏工作室群\\星云工作室',
       reason: '审批测试原因',
       rows: [
         {
@@ -130,7 +127,9 @@ describe('TransitionHCApproval', () => {
     const wrapper = buildWrapper()
     await flushView()
     await flushView()
-    expect(wrapper.find('.dept-tree-stub').attributes('disabled')).toBeDefined()
+    const deptInput = wrapper.find('#dept-field .a-input-stub')
+    expect(deptInput.attributes('disabled')).toBeDefined()
+    expect((deptInput.element as HTMLInputElement).value).toContain('\\')
     const inputs = wrapper.findAll('.a-input-stub')
     expect(inputs.length).toBeGreaterThan(0)
     inputs.forEach((item) => expect(item.attributes('disabled')).toBeDefined())

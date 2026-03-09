@@ -7,7 +7,6 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    AAlert: typeof import('ant-design-vue/es')['Alert']
     AAvatar: typeof import('ant-design-vue/es')['Avatar']
     AButton: typeof import('ant-design-vue/es')['Button']
     ACard: typeof import('ant-design-vue/es')['Card']
@@ -63,8 +62,6 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SalaryEditModal: typeof import('./src/components/SalaryEditModal.vue')['default']
     TransitionAddRowButton: typeof import('./src/components/TransitionAddRowButton.vue')['default']
-    TransitionHcModal: typeof import('./src/components/TransitionHcModal.vue')['default']
-    TransitionHCModal: typeof import('./src/components/TransitionHCModal.vue')['default']
     TransitionHCStats: typeof import('./src/components/TransitionHCStats.vue')['default']
   }
 }

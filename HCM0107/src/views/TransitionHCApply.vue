@@ -154,12 +154,7 @@ const disabledResignDate = (current: Dayjs) => {
 const validateRow = (row: TransitionHCRow) => {
   return !!(
     row.replacedPersonId &&
-    row.projectTag &&
     row.resignDate &&
-    row.groupCategory &&
-    row.rank &&
-    row.socialLocation &&
-    row.workLocation &&
     row.effectiveDate &&
     row.expiryDate
   )
@@ -320,17 +315,12 @@ onMounted(() => {
             <tr>
               <th style="width: 60px">序号</th>
               <th style="width: 100px">HC类型</th>
-              <th style="width: 160px">被替换人员 <span class="required-star">*</span></th>
-              <th style="width: 120px">月薪</th>
-              <th style="width: 140px">部门</th>
-              <th style="width: 120px">项目标签 <span class="required-star">*</span></th>
-              <th style="width: 140px">预计离职日期 <span class="required-star">*</span></th>
-              <th style="width: 120px">族群类别 <span class="required-star">*</span></th>
-              <th style="width: 120px">职级 <span class="required-star">*</span></th>
-              <th style="width: 120px">社保地 <span class="required-star">*</span></th>
-              <th style="width: 120px">工作地点 <span class="required-star">*</span></th>
               <th style="width: 140px">生效日期 <span class="required-star">*</span></th>
               <th style="width: 140px">失效日期 <span class="required-star">*</span></th>
+              <th style="width: 160px">被替换人员 <span class="required-star">*</span></th>
+              <th style="width: 140px">预计离职日期 <span class="required-star">*</span></th>
+              <th style="width: 120px">月薪</th>
+              <th style="width: 140px">部门</th>
               <th class="sticky-col-right" style="width: 80px; text-align: center;">操作</th>
             </tr>
           </thead>
@@ -342,6 +332,21 @@ onMounted(() => {
             >
               <td class="text-center">{{ index + 1 }}</td>
               <td><a-input v-model:value="row.hcType" disabled /></td>
+              <td>
+                <a-select v-model:value="row.effectiveDate" :disabled="!row.replacedPersonId" style="width: 100%" placeholder="生效月份">
+                  <a-select-option v-for="m in 12" :key="m" :value="`2026-${m.toString().padStart(2, '0')}`">
+                    2026年{{ m }}月
+                  </a-select-option>
+                </a-select>
+              </td>
+              <td>
+                <a-select v-model:value="row.expiryDate" :disabled="!row.replacedPersonId" style="width: 100%" placeholder="失效月份">
+                  <a-select-option value="2026-03">2026年3月</a-select-option>
+                  <a-select-option value="2026-06">2026年6月</a-select-option>
+                  <a-select-option value="2026-09">2026年9月</a-select-option>
+                  <a-select-option value="2026-12">2026年12月</a-select-option>
+                </a-select>
+              </td>
               <td>
                 <a-select
                   :ref="(el: any) => setRowSelectRef(row.id, el)"
@@ -363,23 +368,6 @@ onMounted(() => {
                 </a-select>
               </td>
               <td>
-                <a-skeleton-input v-if="row.fieldLoading" active size="small" />
-                <a-input v-else v-model:value="row.salaryDisplay" disabled placeholder="自动带出" />
-              </td>
-              <td>
-                <a-skeleton-input v-if="row.fieldLoading" active size="small" />
-                <a-input v-else v-model:value="row.deptName" disabled placeholder="自动带出" />
-              </td>
-              <td>
-                <a-select v-model:value="row.projectTag" style="width: 100%" placeholder="选择项目" :disabled="!row.replacedPersonId">
-                  <a-select-option value="项目A">项目A</a-select-option>
-                  <a-select-option value="项目B">项目B</a-select-option>
-                  <a-select-option value="项目C">项目C</a-select-option>
-                  <a-select-option value="通用项目">通用项目</a-select-option>
-                  <a-select-option value="核心项目">核心项目</a-select-option>
-                </a-select>
-              </td>
-              <td>
                 <a-date-picker
                   v-model:value="row.resignDate"
                   picker="month"
@@ -391,53 +379,12 @@ onMounted(() => {
                 />
               </td>
               <td>
-                <a-select v-model:value="row.groupCategory" :disabled="!row.replacedPersonId" style="width: 100%" placeholder="选择族群">
-                  <a-select-option value="研发">研发</a-select-option>
-                  <a-select-option value="运营">运营</a-select-option>
-                  <a-select-option value="策划">策划</a-select-option>
-                  <a-select-option value="测试">测试</a-select-option>
-                  <a-select-option value="其他">其他</a-select-option>
-                </a-select>
+                <a-skeleton-input v-if="row.fieldLoading" active size="small" />
+                <a-input v-else v-model:value="row.salaryDisplay" disabled placeholder="自动带出" />
               </td>
               <td>
-                <a-select v-model:value="row.rank" :disabled="!row.replacedPersonId" style="width: 100%" placeholder="选择职级">
-                  <a-select-option v-for="n in 8" :key="n" :value="`P${n}`">P{{ n }}</a-select-option>
-                </a-select>
-              </td>
-              <td>
-                <a-select v-model:value="row.socialLocation" :disabled="!row.replacedPersonId" style="width: 100%" placeholder="社保地">
-                  <a-select-option value="北京">北京</a-select-option>
-                  <a-select-option value="上海">上海</a-select-option>
-                  <a-select-option value="广州">广州</a-select-option>
-                  <a-select-option value="深圳">深圳</a-select-option>
-                  <a-select-option value="杭州">杭州</a-select-option>
-                  <a-select-option value="成都">成都</a-select-option>
-                </a-select>
-              </td>
-              <td>
-                <a-select v-model:value="row.workLocation" :disabled="!row.replacedPersonId" style="width: 100%" placeholder="工作地">
-                  <a-select-option value="北京">北京</a-select-option>
-                  <a-select-option value="上海">上海</a-select-option>
-                  <a-select-option value="广州">广州</a-select-option>
-                  <a-select-option value="深圳">深圳</a-select-option>
-                  <a-select-option value="杭州">杭州</a-select-option>
-                  <a-select-option value="成都">成都</a-select-option>
-                </a-select>
-              </td>
-              <td>
-                <a-select v-model:value="row.effectiveDate" :disabled="!row.replacedPersonId" style="width: 100%" placeholder="生效月份">
-                  <a-select-option v-for="m in 12" :key="m" :value="`2026-${m.toString().padStart(2, '0')}`">
-                    2026年{{ m }}月
-                  </a-select-option>
-                </a-select>
-              </td>
-              <td>
-                <a-select v-model:value="row.expiryDate" :disabled="!row.replacedPersonId" style="width: 100%" placeholder="失效月份">
-                  <a-select-option value="2026-03">2026年3月</a-select-option>
-                  <a-select-option value="2026-06">2026年6月</a-select-option>
-                  <a-select-option value="2026-09">2026年9月</a-select-option>
-                  <a-select-option value="2026-12">2026年12月</a-select-option>
-                </a-select>
+                <a-skeleton-input v-if="row.fieldLoading" active size="small" />
+                <a-input v-else v-model:value="row.deptName" disabled placeholder="自动带出" />
               </td>
               <td class="sticky-col-right text-center">
                 <a-popconfirm title="确定删除该行吗？" @confirm="handleDeleteRow(index)">
@@ -446,7 +393,7 @@ onMounted(() => {
               </td>
             </tr>
             <tr v-if="transitionHCData.length === 0">
-              <td colspan="14" class="empty-state">
+              <td colspan="9" class="empty-state">
                 <a-empty description="暂无过渡期人员，请点击上方按钮添加" />
               </td>
             </tr>

@@ -79,6 +79,32 @@ const buildMockApprovalRow = (): TransitionHCRow => {
   }
 }
 
+const toDeptPathDisplay = async (deptNode: Awaited<ReturnType<typeof fetchOrgNodeByCode>>) => {
+  if (!deptNode) return '上级部门\\申请部门'
+  const parentCode = deptNode.parentCode
+  if (!parentCode) return deptNode.name
+  const parentNode = await fetchOrgNodeByCode(parentCode)
+  const parentName = parentNode?.name || parentCode
+  return `${parentName}\\${deptNode.name}`
+}
+
+const fillApprovalRow = (row: TransitionHCRow, index: number, deptName: string): TransitionHCRow => {
+  const fallbackStaff = pickRandomStaff()
+  const seq = index + 1
+  return {
+    ...row,
+    hcType: '过渡期HC',
+    replacedPersonId: row.replacedPersonId || fallbackStaff?.empId || `E67${6100 + seq}`,
+    replacedPersonName: row.replacedPersonName || fallbackStaff?.name || '张子薇',
+    deptName: row.deptName || deptName || fallbackStaff?.deptName || '运营部',
+    resignDate: row.resignDate || '2026-04',
+    effectiveDate: row.effectiveDate || '2026-03',
+    expiryDate: row.expiryDate || '2026-06',
+    salaryDisplay: row.salaryDisplay || (fallbackStaff?.salaryBase ? Math.round(fallbackStaff.salaryBase * 10000).toString() : '25000'),
+    personOptions: []
+  }
+}
+
 export const fetchTransitionHcApprovalDetail = async (
   config: ApprovalRequestConfig
 ): Promise<TransitionHcApprovalDetail> => {
@@ -87,14 +113,17 @@ export const fetchTransitionHcApprovalDetail = async (
   raiseByStatus(config.mockStatus)
   const deptId = getCurrentUserDeptCode()
   const deptNode = await fetchOrgNodeByCode(deptId)
+  const deptPathDisplay = await toDeptPathDisplay(deptNode)
   const draftRows = loadTransitionDraft()
+  const sourceRows = draftRows.length ? draftRows : [buildMockApprovalRow()]
+  const filledRows = sourceRows.map((item, index) => fillApprovalRow(item, index, deptNode?.name || '运营部'))
   return {
     id: 'THC-APPROVAL-20260305-001',
     deptId,
     deptName: deptNode?.name || '未知部门',
-    deptPath: deptNode?.path || deptId,
+    deptPath: deptPathDisplay,
     reason: '现有项目人员离职导致岗位空缺，需要在过渡期间补齐关键角色，保障项目交付。',
-    rows: draftRows.length ? draftRows : [buildMockApprovalRow()]
+    rows: filledRows
   }
 }
 

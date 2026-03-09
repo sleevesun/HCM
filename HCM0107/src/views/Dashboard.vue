@@ -1,7 +1,6 @@
 <template>
   <a-layout class="layout-container">
-    <!-- Header -->
-    <a-layout-header class="header">
+    <a-layout-header v-if="!isMobileApprovalRoute" class="header">
       <div class="header-left">
         <div class="logo">
           <appstore-outlined style="font-size: 20px; margin-right: 8px;" />
@@ -43,10 +42,8 @@
         </a-button>
       </div>
     </a-layout-header>
-
-    <!-- Main Content -->
-    <a-layout-content class="main-content">
-      <div class="content-card">
+    <a-layout-content :class="isMobileApprovalRoute ? 'main-content mobile-route' : 'main-content'">
+      <div :class="isMobileApprovalRoute ? 'content-card mobile-route' : 'content-card'">
         <router-view></router-view>
       </div>
     </a-layout-content>
@@ -70,6 +67,7 @@ const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const currentMenu = ref<string[]>(['3-2'])
+const isMobileApprovalRoute = ref(false)
 
 const handleMenuClick = ({ key }: { key: string }) => {
   if (key === '3-1') {
@@ -94,6 +92,7 @@ const handleMenuClick = ({ key }: { key: string }) => {
 watch(
   () => route.path,
   (path) => {
+    isMobileApprovalRoute.value = path.includes('/transition-hc-approval-mobile')
     if (path.includes('approval-center')) {
       currentMenu.value = ['3-1']
     } else if (path.includes('salary-budget')) {
@@ -190,5 +189,16 @@ watch(
   border-radius: 4px;
   padding: 24px;
   min-height: calc(100vh - 56px - 48px);
+}
+
+.main-content.mobile-route {
+  padding: 0;
+  max-width: none;
+}
+
+.content-card.mobile-route {
+  border-radius: 0;
+  padding: 0;
+  min-height: 100vh;
 }
 </style>

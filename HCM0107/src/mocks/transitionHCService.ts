@@ -42,7 +42,7 @@ let nextRowId = 1
 
 export const createDefaultTransitionRow = (): TransitionHCRow => ({
   id: `row_${nextRowId++}`,
-  hcType: '正编',
+  hcType: '过渡期HC',
   personOptions: []
 })
 
@@ -53,6 +53,7 @@ export const loadTransitionDraft = (): TransitionHCRow[] => {
     const parsed = JSON.parse(raw) as TransitionHCRow[]
     return parsed.map((item) => ({
       ...item,
+      hcType: '过渡期HC',
       personOptions: [],
       searchLoading: false,
       fieldLoading: false
@@ -65,6 +66,7 @@ export const loadTransitionDraft = (): TransitionHCRow[] => {
 export const saveTransitionDraft = (rows: TransitionHCRow[]) => {
   const toSave = rows.map((item) => ({
     ...item,
+    hcType: '过渡期HC',
     personOptions: [],
     searchLoading: false,
     fieldLoading: false,

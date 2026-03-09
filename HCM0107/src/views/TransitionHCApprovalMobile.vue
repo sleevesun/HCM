@@ -36,7 +36,7 @@ const cacheKey = 'transition_hc_mobile_cache_v1'
 const opinionCacheKey = 'transition_hc_mobile_opinion_v1'
 const router = useRouter()
 
-const applyCount = computed(() => '2')
+const applyCount = computed(() => String(Math.max(rows.value.length, 2)))
 
 const applicantName = computed(() => {
   return flow.value[0]?.operator || 'XXXX'
@@ -55,35 +55,36 @@ const formatDate = (raw?: string) => {
 }
 
 const formatCurrency = (raw?: string) => {
-  const n = Number(raw || 0)
-  if (!Number.isFinite(n)) return '¥0'
-  return `¥${n.toLocaleString('zh-CN')}`
+  if (raw === undefined || raw === null || raw === '') return '-'
+  const n = Number(raw)
+  if (!Number.isFinite(n)) return '-'
+  return n.toLocaleString('zh-CN')
 }
 
 const mobileRows = computed(() => {
-  const base = rows.value[0]
-  const firstPersonName = base?.replacedPersonName || base?.replacedPersonId || '陈立'
-  const baseDept = base?.deptName || deptName.value || '星云工作室'
-  return [
-    {
-      id: base?.id || 'mock-1',
-      replacedPerson: firstPersonName,
-      salary: formatCurrency('23000'),
-      dept: baseDept,
-      resignDate: '2026-05-31',
-      effectiveDate: formatDate(base?.effectiveDate || '2026-03-01'),
-      expiryDate: '2026-06-30'
-    },
-    {
+  const normalized = rows.value.map((item, index) => ({
+    id: item.id || `row-${index + 1}`,
+    title: `过渡期HC ${index + 1}`,
+    effectiveDate: formatDate(item.effectiveDate) || '-',
+    expiryDate: formatDate(item.expiryDate) || '-',
+    replacedPerson: item.replacedPersonName || '张子薇',
+    resignDate: formatDate(item.resignDate) || '-',
+    salary: item.salaryDisplay ? formatCurrency(item.salaryDisplay) : '25000',
+    dept: item.deptName || '暂无'
+  }))
+  if (normalized.length < 2) {
+    normalized.push({
       id: 'mock-2',
-      replacedPerson: '张伟',
-      salary: formatCurrency('31000'),
-      dept: baseDept,
-      resignDate: '2026-04-30',
+      title: '过渡期HC 2',
       effectiveDate: '2026-03-01',
-      expiryDate: '2026-05-31'
-    }
-  ]
+      expiryDate: '2026-05-31',
+      replacedPerson: '张伟',
+      resignDate: '2026-04-30',
+      salary: '31,000',
+      dept: '运营部'
+    })
+  }
+  return normalized
 })
 
 const cachePayload = computed<CachedPayload>(() => ({
@@ -134,7 +135,7 @@ const loadData = async () => {
       ])
     )
     detailId.value = detail.id
-    deptName.value = detail.deptName
+    deptName.value = detail.deptPath || detail.deptName
     reason.value = detail.reason
     rows.value = detail.rows
     flow.value = flowList
@@ -210,12 +211,13 @@ watch(opinion, (value) => {
       <div class="detail-card">
         <div class="section-mini-title">过渡期HC详情</div>
         <div v-for="item in mobileRows" :key="item.id" class="detail-group">
-          <div class="row-item"><span class="label">被替换人</span><span class="value">{{ item.replacedPerson }}</span></div>
-          <div class="row-item"><span class="label">月薪</span><span class="value">{{ item.salary }}</span></div>
-          <div class="row-item"><span class="label">部门</span><span class="value">{{ item.dept }}</span></div>
-          <div class="row-item"><span class="label">预计离职日期</span><span class="value">{{ item.resignDate }}</span></div>
-          <div class="row-item"><span class="label">生效日期</span><span class="value">{{ item.effectiveDate }}</span></div>
-          <div class="row-item"><span class="label">失效日期</span><span class="value">{{ item.expiryDate }}</span></div>
+          <div class="transition-hc-title">{{ item.title }}</div>
+          <div class="row-item"><span class="label">生效日期:</span><span class="value">{{ item.effectiveDate }}</span></div>
+          <div class="row-item"><span class="label">失效日期:</span><span class="value">{{ item.expiryDate }}</span></div>
+          <div class="row-item"><span class="label">被替换人:</span><span class="value">{{ item.replacedPerson }}</span></div>
+          <div class="row-item"><span class="label">预计离职日期:</span><span class="value">{{ item.resignDate }}</span></div>
+          <div class="row-item"><span class="label">月薪:</span><span class="value">{{ item.salary }}</span></div>
+          <div class="row-item"><span class="label">直属部门:</span><span class="value">{{ item.dept }}</span></div>
         </div>
       </div>
 
@@ -298,7 +300,7 @@ watch(opinion, (value) => {
 .header-label {
   font-size: 14px;
   line-height: 22px;
-  color: #9ca3af;
+  color: #4b5563;
 }
 
 .header-value {
@@ -409,26 +411,41 @@ watch(opinion, (value) => {
   padding-top: 8px;
 }
 
+.transition-hc-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f1f1f;
+  margin: 8px 0;
+  text-align: left;
+}
+
 .row-item {
-  min-height: 38px;
+  min-height: 40px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
+  width: 100%;
 }
 
 .label {
+  width: 120px;
+  min-width: 120px;
+  flex-shrink: 0;
   font-size: 14px;
   line-height: 22px;
-  color: #9ca3af;
+  color: #4b5563;
 }
 
 .value {
+  flex: 1;
+  min-width: 0;
   font-size: 14px;
   line-height: 22px;
   color: #111827;
   font-weight: 700;
-  text-align: right;
+  text-align: left;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .flow-list {

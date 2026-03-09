@@ -41,11 +41,18 @@
           <div class="name-cell">
             <template v-if="record.type === 'person'">
                <template v-if="!isAfterApplication">
-                 <a-checkbox 
-                   :checked="selectedIds.has(record.id)"
-                   @change="(e: any) => toggleSelection(record.id, e.target.checked)"
-                   class="row-checkbox"
-                 />
+                 <template v-if="record.name === '过渡期HC'">
+                   <a-tooltip title="删除">
+                     <delete-outlined class="action-icon delete-icon danger" @click="deleteRow(record.id)" />
+                   </a-tooltip>
+                 </template>
+                 <template v-else>
+                   <a-checkbox 
+                     :checked="selectedIds.has(record.id)"
+                     @change="(e: any) => toggleSelection(record.id, e.target.checked)"
+                     class="row-checkbox"
+                   />
+                 </template>
                </template>
                <template v-else>
                  <a-tooltip title="修改">
@@ -55,9 +62,9 @@
                    <delete-outlined class="action-icon delete-icon danger" />
                  </a-tooltip>
                </template>
-               <span class="emp-tag" :class="record.tag" style="margin-right: 8px; margin-left: 0; text-align: left;">{{ record.tagName }}</span>
+               <span class="emp-tag" :class="record.tag" style="margin-right: 8px; margin-left: 0; text-align: left;">{{ getDisplayTag(record) }}</span>
                <div style="flex: 1; text-align: right;">
-                 <PersonnelPopover :name="record.name" :tag="record.tagName" />
+                 <PersonnelPopover :name="record.name" :tag="getDisplayTag(record)" />
                </div>
             </template>
             <template v-else>
@@ -124,7 +131,7 @@ const allPersonIds = computed(() => {
   const ids: string[] = [];
   const traverse = (items: BudgetItem[]) => {
     items.forEach(item => {
-      if (item.type === 'person') {
+      if (item.type === 'person' && item.name !== '过渡期HC') {
         ids.push(item.id);
       }
       if (item.children) {
@@ -172,6 +179,29 @@ const updateProject = (record: BudgetItem, month: number, val: string) => {
   if (record.months && record.months[month]) {
     record.months[month].project = val;
   }
+};
+
+const getDisplayTag = (record: BudgetItem) => {
+  if (record.name === '过渡期HC') return '过渡';
+  return record.tagName || '-';
+};
+
+const deleteRow = (targetId: string) => {
+  const removeInTree = (items: BudgetItem[]): boolean => {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.id === targetId) {
+        items.splice(i, 1);
+        return true;
+      }
+      if (item.children && removeInTree(item.children)) {
+        return true;
+      }
+    }
+    return false;
+  };
+  removeInTree(props.data);
+  selectedIds.value.delete(targetId);
 };
 </script>
 

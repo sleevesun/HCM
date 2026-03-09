@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import type { TableColumnsType } from 'ant-design-vue'
-import DepartmentTreeSelect from '../components/DepartmentTreeSelect.vue'
 import type { TransitionHCRow } from '../mocks/transitionHCService'
 import {
   fetchTransitionHcApprovalDetail,
@@ -13,7 +12,7 @@ import { useRouter } from 'vue-router'
 import FlowReturnButton from '../components/FlowReturnButton.vue'
 
 const loading = ref(false)
-const selectedDept = ref<string>()
+const selectedDeptDisplay = ref('')
 const detailId = ref('')
 const approvalReason = ref('')
 const transitionHCData = ref<TransitionHCRow[]>([])
@@ -44,7 +43,7 @@ const loadData = async () => {
       fetchTransitionHcApprovalFlowHistory({ headers })
     ])
     detailId.value = detail.id
-    selectedDept.value = detail.deptId
+    selectedDeptDisplay.value = detail.deptPath || detail.deptName || ''
     approvalReason.value = detail.reason
     transitionHCData.value = detail.rows
     flowHistory.value = flow
@@ -109,7 +108,7 @@ const handleSwitchToMobile = () => {
           <div class="field-item">
             <label class="field-label" for="dept-field">HC申请部门 <span class="required-star">*</span></label>
             <div id="dept-field" class="field-control-custom">
-              <DepartmentTreeSelect v-model:value="selectedDept" disabled />
+              <a-input :value="selectedDeptDisplay" disabled />
             </div>
           </div>
         </div>
@@ -124,37 +123,27 @@ const handleSwitchToMobile = () => {
             <tr>
               <th style="width: 60px">序号</th>
               <th style="width: 100px">HC类型</th>
-              <th style="width: 160px">被替换人员</th>
-              <th style="width: 120px">月薪</th>
-              <th style="width: 140px">部门</th>
-              <th style="width: 120px">项目标签</th>
-              <th style="width: 140px">预计离职日期</th>
-              <th style="width: 120px">族群类别</th>
-              <th style="width: 120px">职级</th>
-              <th style="width: 120px">社保地</th>
-              <th style="width: 120px">工作地点</th>
               <th style="width: 140px">生效日期</th>
               <th style="width: 140px">失效日期</th>
+              <th style="width: 160px">被替换人员</th>
+              <th style="width: 140px">预计离职日期</th>
+              <th style="width: 120px">月薪</th>
+              <th style="width: 140px">部门</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(row, index) in transitionHCData" :key="row.id">
               <td class="text-center">{{ index + 1 }}</td>
               <td><a-input :value="row.hcType" disabled /></td>
-              <td><a-input :value="row.replacedPersonName || row.replacedPersonId" disabled /></td>
-              <td><a-input :value="row.salaryDisplay" disabled /></td>
-              <td><a-input :value="row.deptName" disabled /></td>
-              <td><a-input :value="row.projectTag" disabled /></td>
-              <td><a-input :value="row.resignDate" disabled /></td>
-              <td><a-input :value="row.groupCategory" disabled /></td>
-              <td><a-input :value="row.rank" disabled /></td>
-              <td><a-input :value="row.socialLocation" disabled /></td>
-              <td><a-input :value="row.workLocation" disabled /></td>
               <td><a-input :value="row.effectiveDate" disabled /></td>
               <td><a-input :value="row.expiryDate" disabled /></td>
+              <td><a-input :value="row.replacedPersonName || row.replacedPersonId" disabled /></td>
+              <td><a-input :value="row.resignDate" disabled /></td>
+              <td><a-input :value="row.salaryDisplay" disabled /></td>
+              <td><a-input :value="row.deptName" disabled /></td>
             </tr>
             <tr v-if="transitionHCData.length === 0">
-              <td colspan="13" class="empty-state">
+              <td colspan="8" class="empty-state">
                 <a-empty description="暂无审批明细数据" />
               </td>
             </tr>

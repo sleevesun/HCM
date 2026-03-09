@@ -76,11 +76,20 @@ describe('TransitionHCApprovalMobile', () => {
         {
           id: 'r1',
           replacedPersonName: '张三',
-          salaryDisplay: '12000',
+          salaryDisplay: '23000',
           deptName: '星云工作室',
-          resignDate: '2026-03',
+          resignDate: '2026-05-31',
           effectiveDate: '2026-04',
           expiryDate: '2026-06'
+        },
+        {
+          id: 'r2',
+          replacedPersonName: '李四',
+          salaryDisplay: '31000',
+          deptName: '运营部',
+          resignDate: '2026-04-30',
+          effectiveDate: '2026-03-01',
+          expiryDate: '2026-05-31'
         }
       ]
     })
@@ -89,19 +98,66 @@ describe('TransitionHCApprovalMobile', () => {
     ])
   })
 
-  it('渲染移动端关键区块与6个详情字段', async () => {
+  it('渲染移动端关键区块与标题递增', async () => {
     const wrapper = buildWrapper()
     await flush()
     expect(wrapper.find('.mobile-header').exists()).toBe(true)
     expect(wrapper.find('.content-wrap').exists()).toBe(true)
     expect(wrapper.findAll('.detail-group').length).toBe(2)
+    const titles = wrapper.findAll('.transition-hc-title')
+    expect(titles.map((item) => item.text())).toEqual(['过渡期HC 1', '过渡期HC 2'])
     expect(wrapper.text()).toContain('申请数量')
     expect(wrapper.text()).toContain('2')
     const fields = wrapper.findAll('.field-stub')
     expect(fields.length).toBe(1)
-    expect(wrapper.text()).toContain('被替换人')
-    expect(wrapper.text()).toContain('预计离职日期')
-    expect(wrapper.text()).toContain('失效日期')
+    expect(wrapper.text()).toContain('生效日期:')
+    expect(wrapper.text()).toContain('失效日期:')
+    expect(wrapper.text()).toContain('被替换人:')
+    expect(wrapper.text()).toContain('直属部门:')
+  })
+
+  it('字段顺序与格式符合要求', async () => {
+    const wrapper = buildWrapper()
+    await flush()
+    const firstGroup = wrapper.findAll('.detail-group')[0]
+    const labels = firstGroup.findAll('.label').map((item) => item.text())
+    expect(labels).toEqual([
+      '生效日期:',
+      '失效日期:',
+      '被替换人:',
+      '预计离职日期:',
+      '月薪:',
+      '直属部门:'
+    ])
+    const values = firstGroup.findAll('.value').map((item) => item.text())
+    expect(values[0]).toBe('2026-04-01')
+    expect(values[1]).toBe('2026-06-01')
+    expect(values[4]).toBe('23,000')
+  })
+
+  it('字段缺失时显示降级文案', async () => {
+    fetchDetailMock.mockResolvedValueOnce({
+      id: 'THC-2',
+      deptId: 'D1',
+      deptName: '',
+      deptPath: '路径',
+      reason: '原因',
+      rows: [
+        {
+          id: 'r1',
+          replacedPersonName: '',
+          salaryDisplay: '',
+          deptName: '',
+          resignDate: '',
+          effectiveDate: '',
+          expiryDate: ''
+        }
+      ]
+    })
+    const wrapper = buildWrapper()
+    await flush()
+    const values = wrapper.findAll('.detail-group')[0].findAll('.value').map((item) => item.text())
+    expect(values).toEqual(['-', '-', '张子薇', '-', '25000', '暂无'])
   })
 
   it('驳回时审批意见为空提示错误', async () => {
