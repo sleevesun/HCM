@@ -221,6 +221,11 @@ watch(opinion, (value) => {
         </div>
       </div>
 
+      <div class="reason-card">
+        <div class="section-mini-title">申请原因</div>
+        <div class="reason-content">{{ reason || '-' }}</div>
+      </div>
+
       <div class="flow-block">
         <div class="section-mini-title">审批记录</div>
         <div class="flow-list">
@@ -234,7 +239,7 @@ watch(opinion, (value) => {
                 </div>
                 <div class="flow-line flow-desc">审批节点：{{ item.node || '-' }}</div>
                 <div class="flow-line flow-time">审批时间：{{ item.operatedAt || '-' }}</div>
-                <div class="flow-line flow-opinion">审批意见：{{ index === 0 ? (reason || item.comment || '-') : (item.comment || '-') }}</div>
+                <div class="flow-line flow-opinion">审批意见：{{ item.comment || '-' }}</div>
               </div>
             </div>
           </div>
@@ -384,10 +389,26 @@ watch(opinion, (value) => {
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 16px;
-  margin-bottom: 10px;
   background: #fff;
   width: 100%;
   box-sizing: border-box;
+}
+
+.reason-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  background: #fff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.reason-content {
+  font-size: 14px;
+  line-height: 22px;
+  color: #4b5563;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .flow-block {
@@ -473,10 +494,10 @@ watch(opinion, (value) => {
   width: 32px;
   height: 32px;
   border-radius: 16px;
-  background: #eef2ff;
-  color: #1d4ed8;
+  background: none;
+  color: #111827;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 400;
   line-height: 32px;
   text-align: center;
   display: flex;
@@ -519,8 +540,8 @@ watch(opinion, (value) => {
 }
 
 .flow-result {
-  color: #0052d9;
-  font-weight: 700;
+  color: #111827;
+  font-weight: 400;
 }
 
 .flow-desc,

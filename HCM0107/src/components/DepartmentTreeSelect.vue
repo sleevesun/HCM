@@ -18,9 +18,9 @@
       :not-found-content="emptyContent"
       aria-label="HC申请部门"
     >
-      <template #title="{ name, disabled, manager, headcount, code }">
+      <template #title="{ name, disabled, code }">
         <span v-if="disabled" style="color: #999">{{ name }} (无权限)</span>
-        <span v-else>{{ name || code }}（{{ manager || '-' }} / {{ Number.isFinite(headcount) ? headcount : '-' }}人）</span>
+        <span v-else>{{ name || code }}</span>
       </template>
     </a-tree-select>
     <div v-if="!loading && !hasSelectable" class="select-hint">当前账号暂无可选组织</div>

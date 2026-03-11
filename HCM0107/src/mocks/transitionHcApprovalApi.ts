@@ -133,22 +133,15 @@ export const fetchTransitionHcApprovalFlowHistory = async (
   await wait(config.device === 'mobile' ? 80 : 110)
   ensureAuthToken(config.headers)
   raiseByStatus(config.mockStatus)
-  const hrdOperator = randomName()
-  const cnbOperator = randomNameExcluding(hrdOperator)
+  const cnbOperator = randomName()
+  const deptHeadOperator = randomNameExcluding(cnbOperator)
   return [
     {
       operator: randomName(),
       node: '申请人',
       result: '已完成',
-      comment: '已提交申请',
+      comment: '提交',
       operatedAt: '2026-03-05 09:30'
-    },
-    {
-      operator: hrdOperator,
-      node: 'HRD',
-      result: '已完成',
-      comment: '同意',
-      operatedAt: '2026-03-05 10:15'
     },
     {
       operator: cnbOperator,
@@ -158,7 +151,7 @@ export const fetchTransitionHcApprovalFlowHistory = async (
       operatedAt: ''
     },
     {
-      operator: randomName(),
+      operator: deptHeadOperator,
       node: '部门负责人',
       result: '未开始',
       comment: '待处理',

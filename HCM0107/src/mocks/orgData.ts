@@ -165,6 +165,12 @@ const collectDescendantCodes = (records: OrgRecord[], rootCode: string): Set<str
   return result
 }
 
+const hasPermittedDescendant = (record: OrgRecord, records: OrgRecord[], permittedCodes: Set<string>): boolean => {
+  if (permittedCodes.has(record.code)) return true
+  const children = records.filter(item => item.parentCode === record.code)
+  return children.some(child => hasPermittedDescendant(child, records, permittedCodes))
+}
+
 export const validateOrgArchitecture = (records: OrgRecord[]) => {
   const issues: string[] = []
   const map = getRecordMap(records)
@@ -255,7 +261,9 @@ export const fetchOrgTree = async (userDeptCode = getCurrentUserDeptCode()): Pro
   const root = records.find((item) => item.code === '01-PW')
   if (!root) return []
   const levelOne = records.filter((item) => item.parentCode === root.code)
-  return levelOne.map((item) => toNode(item, records, map, permittedCodes, false))
+  return levelOne
+    .filter((item) => hasPermittedDescendant(item, records, permittedCodes))
+    .map((item) => toNode(item, records, map, permittedCodes, false))
 }
 
 export const fetchOrgChildren = async (
@@ -268,7 +276,9 @@ export const fetchOrgChildren = async (
   const map = getRecordMap(records)
   const permittedCodes = getUserPermissionCodes(records, userDeptCode)
   const children = records.filter((item) => item.parentCode === parentCode)
-  return children.map((item) => toNode(item, records, map, permittedCodes, false))
+  return children
+    .filter((item) => hasPermittedDescendant(item, records, permittedCodes))
+    .map((item) => toNode(item, records, map, permittedCodes, false))
 }
 
 export const fetchOrgNodeByCode = async (code: string): Promise<OrgNode | null> => {

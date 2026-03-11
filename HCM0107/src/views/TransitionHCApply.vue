@@ -41,13 +41,27 @@ let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
 const transitionHCCount = computed(() => transitionHCData.value.length)
 const quota = computed(() => {
   const a = transitionHCCount.value
-  const b = Math.max(1, deptQuota.value)
-  const y = validHistoryCount.value + a
+  const headcount = deptQuota.value || 0
+  const x = Math.ceil(headcount * 0.025)
+  const y = Math.floor(x * 0.3)
+  const n = Math.max(0, x - y)
+  
+  let errorMsg = ''
+  if (selectedDept.value) {
+    if (n <= 0) {
+      errorMsg = '当前部门无可申请的过渡期HC配额，无法提交申请。'
+    } else if (a > n) {
+      errorMsg = `申请数量已超过上限（最多可申请 ${n} 个），请调整后重新提交。`
+    }
+  }
+
   return {
     a,
-    b,
+    x,
     y,
-    exceeded: y > b
+    n,
+    exceeded: !!errorMsg,
+    errorMsg
   }
 })
 
@@ -188,7 +202,7 @@ const handleSubmit = async () => {
     return
   }
   if (quota.value.exceeded) {
-    message.error('已超出本部门可申请上限')
+    message.error(quota.value.errorMsg)
     return
   }
   if (!validateReason()) {
@@ -289,26 +303,33 @@ onMounted(() => {
             <div id="dept-field" class="field-control-custom">
               <DepartmentTreeSelect v-model:value="selectedDept" @change="handleDeptChange" />
             </div>
+            <TransitionHCStats
+              :b="quota.x"
+              :y="quota.y"
+              :exceeded="quota.exceeded"
+              :loading="statsLoading"
+              :error="statsError"
+              :visible="!!selectedDept"
+              @retry="retryLoadQuota"
+            />
           </div>
         </div>
       </form>
     </section>
 
     <section class="table-section" aria-label="过渡期HC详情">
-      <h2 class="table-title">过渡期HC详情</h2>
-      <TransitionHCStats
-        :a="quota.a"
-        :b="quota.b"
-        :y="quota.y"
-        :exceeded="quota.exceeded"
-        :loading="statsLoading"
-        :error="statsError"
-        @retry="retryLoadQuota"
-      >
-        <template #action>
+      <div class="table-header-row">
+        <h2 class="table-title">过渡期HC详情</h2>
+        <div class="table-actions">
           <TransitionAddRowButton @add="handleAddRow" />
-        </template>
-      </TransitionHCStats>
+        </div>
+      </div>
+      <transition name="fade">
+        <div v-if="selectedDept" class="quota-summary">
+          <span class="quota-text">本次过渡期HC最多可申请 <span class="quota-num">{{ quota.n }}</span> 个</span>
+          <span v-if="quota.exceeded" class="quota-error-hint">，{{ quota.errorMsg }}</span>
+        </div>
+      </transition>
       <div class="table-container" ref="tableContainerRef">
         <table class="transition-hc-table">
           <thead>
@@ -410,9 +431,7 @@ onMounted(() => {
 
     <footer class="footer-actions" aria-label="底部操作区域">
       <a-button @click="transitionHCData = []">重置</a-button>
-      <a-tooltip :title="quota.exceeded ? '已超出本部门可申请上限' : ''">
-        <a-button type="primary" :disabled="quota.exceeded" @click="handleSubmit">提交</a-button>
-      </a-tooltip>
+      <a-button type="primary" :disabled="quota.exceeded" @click="handleSubmit">提交</a-button>
     </footer>
     <FlowReturnButton />
   </main>
@@ -463,7 +482,7 @@ onMounted(() => {
 .field-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .field-label {
@@ -477,15 +496,42 @@ onMounted(() => {
   width: 320px;
 }
 
-.required-star {
-  color: #ff4d4f;
+.table-header-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 24px;
 }
 
 .table-title {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: #1f1f1f;
+}
+
+.quota-summary {
+  margin: 0 0 12px;
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: 4px;
+  line-height: 22px;
+}
+
+.quota-text {
+  color: #666;
+}
+
+.quota-num {
+  color: #1677ff;
+  font-weight: 600;
+  margin: 0 2px;
+}
+
+.table-actions {
+  margin-left: auto;
 }
 
 .table-container {
@@ -556,9 +602,29 @@ onMounted(() => {
 .footer-actions {
   margin-top: auto;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 12px;
   padding-top: 8px;
+}
+
+.quota-error-hint {
+  color: #ff4d4f;
+  font-size: 14px;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.required-star {
+  color: #ff4d4f;
 }
 
 @media (max-width: 992px) {
