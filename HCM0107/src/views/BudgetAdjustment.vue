@@ -12,7 +12,7 @@
 
     <div class="content-wrapper">
       <!-- Section 1: Adjustment Summary -->
-      <AdjustmentSummaryTable :data="summaryData" />
+      <AdjustmentSummaryTwoLayer :data="summaryRows" />
 
       <!-- Section 2: Before Application -->
       <div class="section-divider">
@@ -22,6 +22,7 @@
         title="申请前 汇总"
         :data="detailDataBefore"
         :editable="false"
+        @update:selected-ids="handleBeforeSelectedIdsChange"
       />
 
       <div class="action-buttons-row">
@@ -36,24 +37,12 @@
           </a-button>
         </div>
         <div class="right-actions">
-          <CombinedActionButton />
+          <CombinedActionButton
+            :selected-employee-ids-count="selectedBeforeEmployeeIds.length"
+            @open-subsidy-modal="handleOpenSubsidyModal"
+          />
           <a-button>HC增减</a-button>
-          <a-dropdown>
-            <a-button>其他类型预算申请 <down-outlined /></a-button>
-            <template #overlay>
-              <a-menu>
-                <a-menu-item key="transition">
-                  <span class="transition-hc-btn" @click="handleOpenTransitionHCModal">过渡期HC</span>
-                </a-menu-item>
-                <a-menu-item key="department">
-                  <span @click="handleOpenDeptBudgetModal">部门级预算</span>
-                </a-menu-item>
-                <a-menu-item key="subsidy">
-                  <span>外派补贴</span>
-                </a-menu-item>
-              </a-menu>
-            </template>
-          </a-dropdown>
+          <a-button @click="handleOpenDeptBudgetModal">部门级预算变更</a-button>
           <a-button>不 变</a-button>
         </div>
       </div>
@@ -92,14 +81,14 @@
               >×</span
             >
           </div>
-          <div class="custom-modal-body">
-            <div class="table-actions-bar" style="margin-bottom: 12px; display: flex; justify-content: flex-end;">
+          <div class="custom-modal-body modal-layout">
+            <div class="table-actions-bar">
               <a-button type="primary" @click="handleAddRow">
                 <template #icon><plus-outlined /></template>
                 添加行信息
               </a-button>
             </div>
-            <div class="table-container" ref="tableContainerRef">
+            <div class="table-container modal-form-area" ref="tableContainerRef">
               <table class="transition-hc-table">
                 <thead>
                   <tr>
@@ -284,8 +273,8 @@
               </table>
             </div>
             
-            <div class="modal-footer" style="padding: 16px; text-align: right; border-top: 1px solid #f0f0f0;">
-              <a-button @click="handleCloseTransitionHCModal" style="margin-right: 8px;">返回</a-button>
+            <div class="modal-footer modal-action-area">
+              <a-button @click="handleCloseTransitionHCModal">返回</a-button>
               <a-button type="primary" @click="handleConfirmTransitionHC">确定</a-button>
             </div>
           </div>
@@ -293,113 +282,154 @@
       </div>
     </transition>
 
-    <a-modal
-      v-model:open="deptBudgetModalVisible"
-      title="部门级预算详情"
-      width="90vw"
-      style="top: 20px;"
-      @cancel="handleCloseDeptBudgetModal"
-      @ok="handleCloseDeptBudgetModal"
-      okText="确定"
-      cancelText="返回"
-      :destroyOnClose="true"
-    >
-      <div class="dept-budget-container">
-        <table class="transition-hc-table dept-budget-table">
-          <thead>
-            <tr>
-              <th style="width: 120px">费用类型</th>
-              <th style="width: 80px">调整状态</th>
-              <th v-for="m in 12" :key="m" style="width: 80px">{{ m }}月</th>
-              <th style="width: 100px">全年合计</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- 加班费 -->
-            <tr>
-              <td rowspan="2" class="text-center" style="font-weight: 500; background: #fafafa">加班费</td>
-              <td class="text-center" style="color: #8c8c8c">申请前</td>
-              <td v-for="m in 12" :key="`pre-over-${m}`" class="text-center" style="color: #8c8c8c">
-                {{ formatMoney(deptBudgetData.overtime.pre[m]) }}
-              </td>
-              <td class="text-center" style="font-weight: bold; color: #8c8c8c">
-                {{ formatMoney(deptBudgetData.overtime.preTotal) }}
-              </td>
-            </tr>
-            <tr>
-              <td class="text-center" style="color: #1890ff; font-weight: 500;">申请后</td>
-              <td v-for="m in 12" :key="`post-over-${m}`" class="text-center">
-                <a-input-number
-                  v-model:value="deptBudgetData.overtime.post[m]"
-                  size="small"
-                  :controls="false"
-                  style="width: 100%"
-                />
-              </td>
-              <td class="text-center" style="font-weight: bold;">
-                {{ formatMoney(deptBudgetData.overtime.postTotal) }}
-                <div v-if="deptBudgetData.overtime.diff !== 0" :class="['diff-text', deptBudgetData.overtime.diff > 0 ? 'text-increase' : 'text-decrease']">
-                  {{ deptBudgetData.overtime.diff > 0 ? '+' : '' }}{{ formatMoney(deptBudgetData.overtime.diff) }}
-                </div>
-              </td>
-            </tr>
-
-            <!-- 离职补偿金 -->
-            <tr>
-              <td rowspan="2" class="text-center" style="font-weight: 500; background: #fafafa">离职补偿金</td>
-              <td class="text-center" style="color: #8c8c8c">申请前</td>
-              <td v-for="m in 12" :key="`pre-sev-${m}`" class="text-center" style="color: #8c8c8c">
-                {{ formatMoney(deptBudgetData.severance.pre[m]) }}
-              </td>
-              <td class="text-center" style="font-weight: bold; color: #8c8c8c">
-                {{ formatMoney(deptBudgetData.severance.preTotal) }}
-              </td>
-            </tr>
-            <tr>
-              <td class="text-center" style="color: #1890ff; font-weight: 500;">申请后</td>
-              <td v-for="m in 12" :key="`post-sev-${m}`" class="text-center">
-                <a-input-number
-                  v-model:value="deptBudgetData.severance.post[m]"
-                  size="small"
-                  :controls="false"
-                  style="width: 100%"
-                />
-              </td>
-              <td class="text-center" style="font-weight: bold;">
-                {{ formatMoney(deptBudgetData.severance.postTotal) }}
-                <div v-if="deptBudgetData.severance.diff !== 0" :class="['diff-text', deptBudgetData.severance.diff > 0 ? 'text-increase' : 'text-decrease']">
-                  {{ deptBudgetData.severance.diff > 0 ? '+' : '' }}{{ formatMoney(deptBudgetData.severance.diff) }}
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <transition name="fade">
+      <div
+        v-if="deptBudgetModalVisible"
+        class="custom-modal-overlay"
+        @click="handleCloseDeptBudgetModal"
+      >
+        <div class="custom-modal-content dept-budget-modal-content" @click.stop>
+          <div class="custom-modal-header">
+            <span class="custom-modal-title">部门级预算详情</span>
+            <span
+              class="custom-modal-close"
+              @click="handleCloseDeptBudgetModal"
+              >×</span
+            >
+          </div>
+          <div class="custom-modal-body modal-layout">
+            <div class="dept-budget-container modal-form-area">
+              <table class="transition-hc-table dept-budget-table">
+                <thead>
+                  <tr>
+                    <th rowspan="2" style="width: 240px">部门</th>
+                    <th colspan="3">加班费</th>
+                    <th colspan="3">离职补偿金</th>
+                  </tr>
+                  <tr>
+                    <th style="width: 120px" class="num-col-th">申请前(元)</th>
+                    <th style="width: 160px" class="num-col-th">申请后(元)</th>
+                    <th style="width: 120px" class="num-col-th">变化(元)</th>
+                    <th style="width: 120px" class="num-col-th">申请前(元)</th>
+                    <th style="width: 160px" class="num-col-th">申请后(元)</th>
+                    <th style="width: 120px" class="num-col-th">变化(元)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="summary-total-row">
+                    <td>部门合计</td>
+                    <td class="text-right pre-cell">{{ formatYuanDisplay(totalBudgetRow.overtime.preAmountYuan) }}</td>
+                    <td class="text-right">{{ formatYuanDisplay(totalBudgetRow.overtime.postAmountYuan) }}</td>
+                    <td class="text-right">
+                      <span :class="['diff-money', getDiffClass(totalBudgetRow.overtime.postAmountYuan - totalBudgetRow.overtime.preAmountYuan)]">
+                        {{ formatDiffYuan(totalBudgetRow.overtime.postAmountYuan - totalBudgetRow.overtime.preAmountYuan) }}
+                      </span>
+                    </td>
+                    <td class="text-right pre-cell">{{ formatYuanDisplay(totalBudgetRow.severance.preAmountYuan) }}</td>
+                    <td class="text-right">{{ formatYuanDisplay(totalBudgetRow.severance.postAmountYuan) }}</td>
+                    <td class="text-right">
+                      <span :class="['diff-money', getDiffClass(totalBudgetRow.severance.postAmountYuan - totalBudgetRow.severance.preAmountYuan)]">
+                        {{ formatDiffYuan(totalBudgetRow.severance.postAmountYuan - totalBudgetRow.severance.preAmountYuan) }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr v-for="row in visibleDeptBudgetRows" :key="row.id">
+                    <td>
+                      <div class="dept-name-cell" :style="{ paddingLeft: `${row.level * 18}px` }">
+                        <button
+                          v-if="row.children && row.children.length > 0"
+                          type="button"
+                          class="tree-toggle"
+                          @click="toggleDeptRow(row.id)"
+                        >
+                          {{ expandedDeptIds.has(row.id) ? '▾' : '▸' }}
+                        </button>
+                        <span v-else class="tree-placeholder"></span>
+                        <span :class="{ 'root-name': row.level === 0 }">{{ row.deptName }}</span>
+                      </div>
+                    </td>
+                    <td class="text-right pre-cell">{{ formatYuanDisplay(row.overtime.preAmountYuan) }}</td>
+                    <td class="text-right">
+                      <a-input-number
+                        v-model:value="row.overtime.postAmountYuan"
+                        size="small"
+                        :controls="false"
+                        :min="0"
+                        :formatter="formatYuanInput"
+                        :parser="parseYuanInput"
+                        style="width: 100%"
+                        class="text-right-input"
+                      />
+                    </td>
+                    <td class="text-right">
+                      <span :class="['diff-money', getDiffClass(row.overtime.postAmountYuan - row.overtime.preAmountYuan)]">
+                        {{ formatDiffYuan(row.overtime.postAmountYuan - row.overtime.preAmountYuan) }}
+                      </span>
+                    </td>
+                    <td class="text-right pre-cell">{{ formatYuanDisplay(row.severance.preAmountYuan) }}</td>
+                    <td class="text-right">
+                      <a-input-number
+                        v-model:value="row.severance.postAmountYuan"
+                        size="small"
+                        :controls="false"
+                        :min="0"
+                        :formatter="formatYuanInput"
+                        :parser="parseYuanInput"
+                        style="width: 100%"
+                        class="text-right-input"
+                      />
+                    </td>
+                    <td class="text-right">
+                      <span :class="['diff-money', getDiffClass(row.severance.postAmountYuan - row.severance.preAmountYuan)]">
+                        {{ formatDiffYuan(row.severance.postAmountYuan - row.severance.preAmountYuan) }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer modal-action-area">
+              <a-button @click="handleCloseDeptBudgetModal">返回</a-button>
+              <a-button type="primary" @click="handleConfirmDeptBudget">确定</a-button>
+            </div>
+          </div>
+        </div>
       </div>
-    </a-modal>
+    </transition>
+
+    <transition name="fade">
+      <SubsidyEditModal
+        v-if="subsidyModalVisible"
+        v-model:open="subsidyModalVisible"
+        :rows="subsidyModalRows"
+        @save="handleSubsidySave"
+      />
+    </transition>
 
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, nextTick } from "vue";
+import { computed, ref, nextTick } from "vue";
 import {
   AppstoreOutlined,
   DownloadOutlined,
   ImportOutlined,
-  PlusOutlined,
-  DownOutlined
+  PlusOutlined
 } from "@ant-design/icons-vue";
 import dayjs, { Dayjs } from "dayjs";
-import AdjustmentSummaryTable from "../components/budget/AdjustmentSummaryTable.vue";
+import AdjustmentSummaryTwoLayer from "../components/budget/AdjustmentSummaryTwoLayer.vue";
 import BudgetDetailTable from "../components/budget/BudgetDetailTable.vue";
 import CombinedActionButton from "../components/CombinedActionButton.vue";
+import SubsidyEditModal, { type SubsidyEditRow } from "../components/SubsidyEditModal.vue";
 import {
   summaryData,
   detailDataBefore,
   detailDataAfter,
   searchStaff,
   StaffInfo,
-  BudgetItem
+  BudgetItem,
+  AdjustmentSummaryItem
 } from "../mocks/budgetData";
 
 import { message } from 'ant-design-vue';
@@ -435,82 +465,302 @@ const transitionHCModalVisible = ref(false);
 const transitionHCData = ref<TransitionHCRow[]>([]);
 const tableContainerRef = ref<HTMLElement | null>(null);
 const localDetailDataAfter = ref<BudgetItem[]>(detailDataAfter);
+const summaryRows = ref<AdjustmentSummaryItem[]>(JSON.parse(JSON.stringify(summaryData)));
+const selectedBeforeEmployeeIds = ref<string[]>([])
+const subsidyModalVisible = ref(false)
+const subsidyModalRows = ref<SubsidyEditRow[]>([])
+
+const handleBeforeSelectedIdsChange = (ids: string[]) => {
+  selectedBeforeEmployeeIds.value = ids
+}
+
+const ensureSubsidyMonths = (item: BudgetItem) => {
+  if (!item.months) item.months = {} as any
+  for (let m = 1; m <= 12; m++) {
+    if (!item.months[m]) item.months[m] = { salary: 0, subsidy: 0 }
+    if (typeof item.months[m].subsidy !== 'number') item.months[m].subsidy = 0
+  }
+}
+
+const findPersonById = (items: BudgetItem[], targetId: string): BudgetItem | null => {
+  for (const item of items) {
+    if (item.id === targetId && item.type === 'person') return item
+    if (item.children?.length) {
+      const found = findPersonById(item.children, targetId)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+const buildSubsidyModalRows = (): SubsidyEditRow[] => {
+  const rows: SubsidyEditRow[] = []
+  for (const id of selectedBeforeEmployeeIds.value) {
+    const person = findPersonById(detailDataBefore, id)
+    if (!person || person.type !== 'person') continue
+    ensureSubsidyMonths(person)
+    const months: Record<number, number> = {}
+    for (let m = 1; m <= 12; m++) {
+      const value = Number(person.months[m].subsidy || 0)
+      months[m] = Number(value.toFixed(1))
+    }
+    rows.push({
+      id: person.id,
+      name: person.name,
+      months
+    })
+  }
+  return rows
+}
+
+const applySubsidyToDataTree = (items: BudgetItem[], id: string, months: Record<number, number>) => {
+  for (const item of items) {
+    if (item.id === id && item.type === 'person') {
+      ensureSubsidyMonths(item)
+      for (let m = 1; m <= 12; m++) {
+        item.months[m].subsidy = Number((months[m] || 0).toFixed(1))
+      }
+      return true
+    }
+    if (item.children?.length && applySubsidyToDataTree(item.children, id, months)) {
+      return true
+    }
+  }
+  return false
+}
+
+const handleOpenSubsidyModal = () => {
+  if (!selectedBeforeEmployeeIds.value.length) {
+    message.warning('请先选择员工')
+    return
+  }
+  subsidyModalRows.value = buildSubsidyModalRows()
+  if (!subsidyModalRows.value.length) {
+    message.warning('请先选择员工')
+    return
+  }
+  subsidyModalVisible.value = true
+}
+
+const handleSubsidySave = (rows: SubsidyEditRow[]) => {
+  for (const row of rows) {
+    applySubsidyToDataTree(detailDataBefore, row.id, row.months)
+    applySubsidyToDataTree(localDetailDataAfter.value, row.id, row.months)
+  }
+  subsidyModalRows.value = rows
+  message.success('外派补贴已保存')
+}
 
 // --- 部门级预算弹窗相关状态 ---
 const deptBudgetModalVisible = ref(false);
 
-interface MonthlyData {
-  [key: number]: number;
+interface DeptBudgetValue {
+  preAmountYuan: number
+  postAmountYuan: number
 }
 
-interface BudgetCategory {
-  pre: MonthlyData;
-  post: MonthlyData;
-  preTotal: number;
-  postTotal: number;
-  diff: number;
+interface DeptBudgetTreeRow {
+  id: string
+  deptName: string
+  level: number
+  overtime: DeptBudgetValue
+  severance: DeptBudgetValue
+  children?: DeptBudgetTreeRow[]
 }
 
-// 帮助函数，生成长度12的0
-const genEmptyMonths = (): MonthlyData => {
-  const m: MonthlyData = {};
-  for(let i=1; i<=12; i++) m[i] = 0;
-  return m;
-};
+const toYuan = (wan: number) => Math.round((wan || 0) * 10000)
+const toWan = (yuan: number) => Number((yuan / 10000).toFixed(1))
+const cloneTreeRows = (rows: DeptBudgetTreeRow[]): DeptBudgetTreeRow[] => {
+  return rows.map(row => ({
+    ...row,
+    overtime: { ...row.overtime },
+    severance: { ...row.severance },
+    children: row.children ? cloneTreeRows(row.children) : undefined
+  }))
+}
 
-// 预设一些申请前的原始基线数据
-const mockPreOvertime = genEmptyMonths();
-mockPreOvertime[1] = 5000;
-mockPreOvertime[2] = 4000;
+const buildDeptBudgetRowsFromSummary = (): DeptBudgetTreeRow[] => {
+  const root = summaryRows.value[0]
+  if (!root) return []
+  const toTree = (node: AdjustmentSummaryItem, level: number): DeptBudgetTreeRow => ({
+    id: node.id,
+    deptName: node.deptName,
+    level,
+    overtime: {
+      preAmountYuan: toYuan(node.pre.deptBudget.overtime),
+      postAmountYuan: toYuan(node.post.deptBudget.overtime)
+    },
+    severance: {
+      preAmountYuan: toYuan(node.pre.deptBudget.severance),
+      postAmountYuan: toYuan(node.post.deptBudget.severance)
+    },
+    children: node.children?.map(child => toTree(child, level + 1))
+  })
+  return [toTree(root, 0)]
+}
 
-const mockPreSeverance = genEmptyMonths();
-mockPreSeverance[6] = 20000;
+const deptBudgetRows = ref<DeptBudgetTreeRow[]>(buildDeptBudgetRowsFromSummary())
+const draftDeptBudgetRows = ref<DeptBudgetTreeRow[]>([])
+const expandedDeptIds = ref<Set<string>>(new Set(['ROOT']))
 
-const deptBudgetData = reactive<{
-  overtime: BudgetCategory;
-  severance: BudgetCategory;
-}>({
-  overtime: {
-    pre: { ...mockPreOvertime },
-    post: { ...mockPreOvertime }, // Initial state matches pre
-    get preTotal() { return Object.values(this.pre).reduce((sum, v) => sum + (v || 0), 0); },
-    get postTotal() { return Object.values(this.post).reduce((sum, v) => sum + (v || 0), 0); },
-    get diff() { return this.postTotal - this.preTotal; }
-  },
-  severance: {
-    pre: { ...mockPreSeverance },
-    post: { ...mockPreSeverance },
-    get preTotal() { return Object.values(this.pre).reduce((sum, v) => sum + (v || 0), 0); },
-    get postTotal() { return Object.values(this.post).reduce((sum, v) => sum + (v || 0), 0); },
-    get diff() { return this.postTotal - this.preTotal; }
+const flattenVisibleRows = (rows: DeptBudgetTreeRow[]): DeptBudgetTreeRow[] => {
+  const out: DeptBudgetTreeRow[] = []
+  const walk = (row: DeptBudgetTreeRow) => {
+    out.push(row)
+    if (row.children && row.children.length > 0 && expandedDeptIds.value.has(row.id)) {
+      row.children.forEach(walk)
+    }
   }
-});
+  rows.forEach(walk)
+  return out
+}
+
+const visibleDeptBudgetRows = computed(() => flattenVisibleRows(draftDeptBudgetRows.value))
+
+const totalBudgetRow = computed(() => {
+  const allRows: DeptBudgetTreeRow[] = []
+  const walk = (row: DeptBudgetTreeRow) => {
+    allRows.push(row)
+    row.children?.forEach(walk)
+  }
+  deptBudgetRows.value.forEach(walk)
+  return {
+    overtime: {
+      preAmountYuan: allRows.reduce((sum, row) => sum + row.overtime.preAmountYuan, 0),
+      postAmountYuan: allRows.reduce((sum, row) => sum + row.overtime.postAmountYuan, 0)
+    },
+    severance: {
+      preAmountYuan: allRows.reduce((sum, row) => sum + row.severance.preAmountYuan, 0),
+      postAmountYuan: allRows.reduce((sum, row) => sum + row.severance.postAmountYuan, 0)
+    }
+  }
+})
+
+const formatYuanDisplay = (value: number) => {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return '0'
+  return numeric.toLocaleString('zh-CN', { maximumFractionDigits: 0 })
+}
+
+const formatYuanInput = (value: string | number | undefined) => {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return '0'
+  return numeric.toLocaleString('zh-CN', { maximumFractionDigits: 0 })
+}
+
+const parseYuanInput = (value: string | undefined) => {
+  if (!value) return 0
+  const parsed = Number(value.replace(/,/g, '').replace(/[^\d.-]/g, ''))
+  if (!Number.isFinite(parsed) || parsed < 0) return 0
+  return parsed
+}
+
+const formatDiffYuan = (diffYuan: number) => {
+  if (diffYuan === 0) return '0'
+  const sign = diffYuan > 0 ? '+' : '-'
+  return `${sign}${Math.abs(diffYuan).toLocaleString('zh-CN', { maximumFractionDigits: 0 })}`
+}
+
+const getDiffClass = (diffYuan: number) => {
+  if (diffYuan > 0) return 'text-increase'
+  if (diffYuan < 0) return 'text-decrease'
+  return 'text-neutral'
+}
+
+const syncDeptBudgetSummaryRows = () => {
+  const budgetMap = new Map<string, DeptBudgetTreeRow>()
+  const walkRows = (rows: DeptBudgetTreeRow[]) => {
+    for (const row of rows) {
+      budgetMap.set(row.id, row)
+      if (row.children) walkRows(row.children)
+    }
+  }
+  walkRows(deptBudgetRows.value)
+
+  const sumSubTree = (row: DeptBudgetTreeRow, field: 'overtime' | 'severance', key: 'preAmountYuan' | 'postAmountYuan'): number => {
+    let total = row[field][key]
+    if (row.children && row.children.length > 0) {
+      for (const child of row.children) {
+        total += sumSubTree(child, field, key)
+      }
+    }
+    return total
+  }
+
+  const walk = (node: AdjustmentSummaryItem) => {
+    const rowBudget = budgetMap.get(node.id)
+    if (rowBudget) {
+      node.pre.deptBudget.overtime = toWan(rowBudget.overtime.preAmountYuan)
+      node.post.deptBudget.overtime = toWan(rowBudget.overtime.postAmountYuan)
+      node.pre.deptBudget.severance = toWan(rowBudget.severance.preAmountYuan)
+      node.post.deptBudget.severance = toWan(rowBudget.severance.postAmountYuan)
+      if (node.children && node.children.length > 0) {
+        const rootPreOver = sumSubTree(rowBudget, 'overtime', 'preAmountYuan')
+        const rootPostOver = sumSubTree(rowBudget, 'overtime', 'postAmountYuan')
+        const rootPreSev = sumSubTree(rowBudget, 'severance', 'preAmountYuan')
+        const rootPostSev = sumSubTree(rowBudget, 'severance', 'postAmountYuan')
+        node.pre.deptBudget.overtime = toWan(rootPreOver)
+        node.post.deptBudget.overtime = toWan(rootPostOver)
+        node.pre.deptBudget.severance = toWan(rootPreSev)
+        node.post.deptBudget.severance = toWan(rootPostSev)
+      }
+    }
+    node.children?.forEach(walk)
+    node.diff.deptBudget.overtime = Number((node.post.deptBudget.overtime - node.pre.deptBudget.overtime).toFixed(1))
+    node.diff.deptBudget.severance = Number((node.post.deptBudget.severance - node.pre.deptBudget.severance).toFixed(1))
+    node.post.deptBudget.signOn = node.pre.deptBudget.signOn
+    node.diff.deptBudget.signOn = 0
+  }
+
+  summaryRows.value.forEach(walk)
+}
 
 const handleOpenDeptBudgetModal = () => {
-  deptBudgetModalVisible.value = true;
-};
+  draftDeptBudgetRows.value = cloneTreeRows(deptBudgetRows.value)
+  const rootId = draftDeptBudgetRows.value[0]?.id
+  expandedDeptIds.value = new Set(rootId ? [rootId] : [])
+  deptBudgetModalVisible.value = true
+}
+
+const toggleDeptRow = (rowId: string) => {
+  const next = new Set(expandedDeptIds.value)
+  if (next.has(rowId)) {
+    next.delete(rowId)
+  } else {
+    next.add(rowId)
+  }
+  expandedDeptIds.value = next
+}
 
 const handleCloseDeptBudgetModal = () => {
-  deptBudgetModalVisible.value = false;
-};
+  deptBudgetModalVisible.value = false
+}
 
-const formatMoney = (val: number | string | undefined | null) => {
-  if (val === undefined || val === null || val === '') return '-';
-  const num = Number(val);
-  if (isNaN(num)) return '-';
-  return num.toLocaleString('zh-CN', { maximumFractionDigits: 2 });
-};
+const handleConfirmDeptBudget = () => {
+  const validate = (rows: DeptBudgetTreeRow[]): boolean => {
+    for (const row of rows) {
+      if (!Number.isFinite(row.overtime.postAmountYuan) || row.overtime.postAmountYuan < 0) {
+        message.error(`请输入有效金额：${row.deptName}-加班费`)
+        return false
+      }
+      if (!Number.isFinite(row.severance.postAmountYuan) || row.severance.postAmountYuan < 0) {
+        message.error(`请输入有效金额：${row.deptName}-离职补偿金`)
+        return false
+      }
+      if (row.children && !validate(row.children)) {
+        return false
+      }
+    }
+    return true
+  }
+  if (!validate(draftDeptBudgetRows.value)) return
+  deptBudgetRows.value = cloneTreeRows(draftDeptBudgetRows.value)
+  syncDeptBudgetSummaryRows()
+  deptBudgetModalVisible.value = false
+  message.success('部门级预算已保存并同步')
+}
 
 let nextRowId = 1;
-
-/**
- * @author AI Assistant
- * @date 2026-03-03
- * @description 打开过渡期HC录入弹窗
- */
-const handleOpenTransitionHCModal = () => {
-  transitionHCModalVisible.value = true;
-};
 
 /**
  * @author AI Assistant
@@ -955,6 +1205,159 @@ const handleConfirmTransitionHC = () => {
 .dept-budget-container {
   width: 100%;
   overflow-x: auto;
-  padding-bottom: 8px; /* 为可能出现的滚动条预留空间 */
+  padding-bottom: 8px;
+}
+
+.dept-budget-modal-content {
+  width: fit-content;
+  min-width: 0;
+  max-width: calc(100vw - 120px);
+  height: auto;
+  max-height: 80vh;
+}
+
+.dept-budget-modal-content .custom-modal-body {
+  padding: 16px 20px 68px;
+}
+
+.dept-budget-table {
+  width: auto;
+  min-width: 1040px;
+}
+
+.dept-budget-table thead th {
+  position: static;
+  padding: 10px 8px;
+}
+
+.dept-budget-table thead th.num-col-th {
+  text-align: right;
+  padding-right: 10px;
+}
+
+.dept-budget-table tbody tr {
+  height: 42px;
+}
+
+.dept-budget-table tbody td {
+  height: 42px;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  vertical-align: middle;
+  border-right: 1px solid #ebeef5;
+  border-bottom: 1px solid #ebeef5;
+}
+
+/* 1. 输入框高度调整为 1.5 倍 (假设原高度24px -> 36px) */
+.dept-budget-table .ant-input-number {
+  top: auto;
+  transform: none;
+  margin-top: 0;
+  margin-bottom: 0;
+  display: inline-block;
+  vertical-align: middle;
+  height: 30px;
+  line-height: 30px;
+  width: 100% !important;
+}
+
+/* 聚焦时左对齐，失焦时右对齐 */
+.text-right-input .ant-input-number-input {
+  text-align: right;
+}
+.text-right-input.ant-input-number-focused .ant-input-number-input {
+  text-align: left !important;
+}
+
+/* 2. 所有数字内容右对齐 */
+.dept-budget-table tbody td:nth-child(n+2) {
+  text-align: right !important;
+  padding-right: 8px !important;
+}
+
+/* 3. 预算增加值样式调整 */
+.diff-text {
+  margin-top: 4px;
+  font-size: 12px; /* 减小字号 (default 14px -> 12px) */
+  font-weight: normal; /* 取消加粗 */
+  display: block;
+  text-align: right; /* Ensure diff text aligns right */
+}
+
+.text-increase {
+  color: #F44336; /* 红色增加 */
+}
+
+.text-decrease {
+  color: #00C853; /* 绿色减少 */
+}
+
+.text-neutral {
+  color: #8c8c8c;
+}
+
+.pre-cell {
+  color: #8c8c8c;
+}
+
+.diff-money {
+  font-weight: 500;
+}
+
+.summary-total-row td {
+  background: #f5f7fa;
+  font-weight: 600;
+}
+
+.dept-name-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.tree-toggle {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+  background: #fff;
+  color: #555;
+  font-size: 12px;
+  line-height: 16px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.tree-placeholder {
+  width: 18px;
+  display: inline-block;
+}
+
+.root-name {
+  font-weight: 600;
+}
+
+/* 5. 底部按钮调整 */
+.dept-budget-modal-content .modal-footer {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  border-top: none; /* Remove border if positioned absolutely */
+  padding: 0;
+  background: transparent;
+}
+
+.dept-budget-modal-content .modal-footer .ant-btn {
+  height: 44px; /* 移动端点击区域要求 */
+  min-width: 88px;
+}
+
+/* 针对弹窗内容布局调整以适应按钮 */
+.dept-budget-modal-content .custom-modal-body {
+  position: relative;
 }
 </style>

@@ -12,13 +12,23 @@
     </button>
     <div class="separator"></div>
     <button 
-      class="c-btn right-btn" 
+      class="c-btn middle-btn" 
       @click="toggleProjectPanel"
       @mouseenter="isHovered = true"
       @mouseleave="isHovered = false"
     >
       项目标签
       <span class="ripple" v-if="projectRipple" :style="projectRippleStyle"></span>
+    </button>
+    <div class="separator"></div>
+    <button 
+      class="c-btn right-btn" 
+      @click="handleSubsidyClick"
+      @mouseenter="isHovered = true"
+      @mouseleave="isHovered = false"
+    >
+      外派补贴
+      <span class="ripple" v-if="subsidyRipple" :style="subsidyRippleStyle"></span>
     </button>
 
     <!-- Salary Edit Modal -->
@@ -52,6 +62,14 @@ import SalaryEditModal from './SalaryEditModal.vue'
 import ProjectTagEditModal from './ProjectTagEditModal.vue'
 
 const isHovered = ref(false)
+const props = withDefaults(defineProps<{
+  selectedEmployeeIdsCount?: number
+}>(), {
+  selectedEmployeeIdsCount: 0
+})
+const emit = defineEmits<{
+  (e: 'open-subsidy-modal'): void
+}>()
 
 // --- State Management ---
 const isSalaryDirty = ref(false)
@@ -87,6 +105,19 @@ const handleProjectOk = () => {
   message.success('项目标签变更已保存')
   projectModalVisible.value = false
   isProjectDirty.value = false
+}
+
+// --- Subsidy Logic ---
+const subsidyRipple = ref(false)
+const subsidyRippleStyle = reactive({})
+
+const handleSubsidyClick = (e?: MouseEvent) => {
+  if (e) triggerRipple(e, 'subsidy')
+  if ((props.selectedEmployeeIdsCount ?? 0) <= 0) {
+    message.warning('请先选择员工')
+    return
+  }
+  emit('open-subsidy-modal')
 }
 
 // --- Switch Logic ---
@@ -153,7 +184,7 @@ const handleSwitchToSalary = () => {
 }
 
 // --- Ripple Effect ---
-const triggerRipple = (e: MouseEvent, type: 'salary' | 'project') => {
+const triggerRipple = (e: MouseEvent, type: 'salary' | 'project' | 'subsidy') => {
   const btn = e.currentTarget as HTMLElement
   const rect = btn.getBoundingClientRect()
   const x = e.clientX - rect.left
@@ -168,10 +199,14 @@ const triggerRipple = (e: MouseEvent, type: 'salary' | 'project') => {
     Object.assign(salaryRippleStyle, style)
     salaryRipple.value = true
     setTimeout(() => salaryRipple.value = false, 600)
-  } else {
+  } else if (type === 'project') {
     Object.assign(projectRippleStyle, style)
     projectRipple.value = true
     setTimeout(() => projectRipple.value = false, 600)
+  } else if (type === 'subsidy') {
+    Object.assign(subsidyRippleStyle, style)
+    subsidyRipple.value = true
+    setTimeout(() => subsidyRipple.value = false, 600)
   }
 }
 </script>
@@ -242,6 +277,10 @@ const triggerRipple = (e: MouseEvent, type: 'salary' | 'project') => {
 
 .left-btn {
   /* Removed border radius override since it's not the first child anymore */
+}
+
+.middle-btn {
+  border-radius: 0;
 }
 
 .right-btn {

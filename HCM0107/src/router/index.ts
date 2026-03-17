@@ -9,6 +9,7 @@ import TransitionHCApply from '../views/TransitionHCApply.vue'
 import TransitionHCApproval from '../views/TransitionHCApproval.vue'
 import TransitionHCApprovalMobile from '../views/TransitionHCApprovalMobile.vue'
 import TransitionHCFlowBoard from '../views/TransitionHCFlowBoard.vue'
+import BudgetApprovalMobile from '../views/BudgetApprovalMobile.vue'
 
 const routes = [
   {
@@ -62,6 +63,12 @@ const routes = [
     name: 'TransitionHCApprovalMobile',
     component: TransitionHCApprovalMobile,
     meta: { title: '过渡期HC审批(移动端)', permissionCode: 'transition_hc_approval_view' }
+  },
+  {
+    path: '/budget-approval-mobile',
+    name: 'BudgetApprovalMobile',
+    component: BudgetApprovalMobile,
+    meta: { title: '预算审批(移动端)', permissionCode: 'finance' }
   },
   {
     path: '/transition-hc-flow-board',

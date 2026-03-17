@@ -3,7 +3,15 @@
   command = "npm run build"
   publish = "dist"
 
+[build.environment]
+  NODE_VERSION = "20"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+[dev]
+  base = "HCM0107"
+  command = "npm run dev"
+  port = 5173

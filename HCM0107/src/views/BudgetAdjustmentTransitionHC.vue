@@ -12,7 +12,7 @@
 
     <div class="content-wrapper">
       <!-- Section 1: Adjustment Summary -->
-      <AdjustmentSummaryTable :data="summaryData" />
+      <AdjustmentSummaryTwoLayer :data="summaryData" />
 
       <!-- Section 2: Before Application -->
       <div class="section-divider">
@@ -38,22 +38,7 @@
         <div class="right-actions">
           <CombinedActionButton />
           <a-button>HC增减</a-button>
-          <a-dropdown>
-            <a-button>其他类型预算申请 <down-outlined /></a-button>
-            <template #overlay>
-              <a-menu>
-                <a-menu-item key="transition">
-                  <span class="transition-hc-btn" @click="handleOpenTransitionHCModal">过渡期HC</span>
-                </a-menu-item>
-                <a-menu-item key="department">
-                  <span @click="handleOpenDeptBudgetModal">部门级预算</span>
-                </a-menu-item>
-                <a-menu-item key="subsidy">
-                  <span>外派补贴</span>
-                </a-menu-item>
-              </a-menu>
-            </template>
-          </a-dropdown>
+          <a-button @click="handleOpenDeptBudgetModal">部门级预算变更</a-button>
           <a-button>不 变</a-button>
         </div>
       </div>
@@ -388,11 +373,10 @@ import {
   AppstoreOutlined,
   DownloadOutlined,
   ImportOutlined,
-  PlusOutlined,
-  DownOutlined
+  PlusOutlined
 } from "@ant-design/icons-vue";
 import dayjs, { Dayjs } from "dayjs";
-import AdjustmentSummaryTable from "../components/budget/AdjustmentSummaryTable.vue";
+import AdjustmentSummaryTwoLayer from "../components/budget/AdjustmentSummaryTwoLayer.vue";
 import BudgetDetailTable from "../components/budget/BudgetDetailTable.vue";
 import CombinedActionButton from "../components/CombinedActionButton.vue";
 import FlowReturnButton from "../components/FlowReturnButton.vue";
@@ -505,15 +489,6 @@ const formatMoney = (val: number | string | undefined | null) => {
 };
 
 let nextRowId = 1;
-
-/**
- * @author AI Assistant
- * @date 2026-03-03
- * @description 打开过渡期HC录入弹窗
- */
-const handleOpenTransitionHCModal = () => {
-  transitionHCModalVisible.value = true;
-};
 
 /**
  * @author AI Assistant

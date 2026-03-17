@@ -123,8 +123,16 @@ const props = defineProps<{
   isAfterApplication?: boolean;
 }>();
 
+const emit = defineEmits<{
+  (e: 'update:selected-ids', value: string[]): void
+}>()
+
 const searchText = ref('');
 const selectedIds = ref(new Set<string>());
+
+const emitSelectedIds = () => {
+  emit('update:selected-ids', Array.from(selectedIds.value))
+}
 
 // Flatten data to get all person items
 const allPersonIds = computed(() => {
@@ -153,6 +161,7 @@ const toggleSelection = (id: string, checked: boolean) => {
   } else {
     selectedIds.value.delete(id);
   }
+  emitSelectedIds()
 };
 
 const toggleSelectAll = () => {
@@ -161,6 +170,7 @@ const toggleSelectAll = () => {
   } else {
     allPersonIds.value.forEach(id => selectedIds.value.add(id));
   }
+  emitSelectedIds()
 };
 
 const formatMoney = (val: number) => {
@@ -202,6 +212,7 @@ const deleteRow = (targetId: string) => {
   };
   removeInTree(props.data);
   selectedIds.value.delete(targetId);
+  emitSelectedIds()
 };
 </script>
 

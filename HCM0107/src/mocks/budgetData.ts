@@ -1,23 +1,34 @@
 
 import largeScaleData from './largeScaleBudgetData.json';
+import { generateSummaryDataTree } from './generateSummaryData';
 
 export interface AdjustmentSummaryItem {
   id: string;
   deptName: string; // 申请部门
+  children?: AdjustmentSummaryItem[];
   // 申请前
   pre: {
-    hc: { reg: number; other: number };
+    hc: { reg: number; intern: number; outsource: number; dispatch: number; partTime: number };
     salary: { month: number; year: number };
+    salaryBreakdown: { reg: number; intern: number; outsource: number; dispatch: number; partTime: number };
+    monthSalaryBreakdown: { reg: number; intern: number; outsource: number; dispatch: number; partTime: number };
+    deptBudget: { severance: number; overtime: number; signOn: number };
   };
   // 申请通过后
   post: {
-    hc: { reg: number; other: number };
+    hc: { reg: number; intern: number; outsource: number; dispatch: number; partTime: number };
     salary: { month: number; year: number };
+    salaryBreakdown: { reg: number; intern: number; outsource: number; dispatch: number; partTime: number };
+    monthSalaryBreakdown: { reg: number; intern: number; outsource: number; dispatch: number; partTime: number };
+    deptBudget: { severance: number; overtime: number; signOn: number };
   };
   // 变化
   diff: {
-    hc: { reg: number; other: number };
+    hc: { reg: number; intern: number; outsource: number; dispatch: number; partTime: number };
     salary: { month: number; year: number };
+    salaryBreakdown: { reg: number; intern: number; outsource: number; dispatch: number; partTime: number };
+    monthSalaryBreakdown: { reg: number; intern: number; outsource: number; dispatch: number; partTime: number };
+    deptBudget: { severance: number; overtime: number; signOn: number };
   };
 }
 
@@ -33,6 +44,7 @@ export interface BudgetItem {
     [key: number]: {
       salary: number;
       project?: string;
+      subsidy?: number;
     };
   };
   totalYear: number;
@@ -46,50 +58,15 @@ export interface BudgetItem {
   createTime?: number;
 }
 
-export const summaryData: AdjustmentSummaryItem[] = [
-  {
-    id: '1',
-    deptName: '游戏工作室群/原石工作室',
-    pre: { hc: { reg: 45, other: 1 }, salary: { month: 380.9, year: 4562.1 } },
-    post: { hc: { reg: 46, other: 1 }, salary: { month: 388.7, year: 4655.3 } },
-    diff: { hc: { reg: 1, other: 0 }, salary: { month: 7.8, year: 93.2 } },
-  },
-  {
-    id: '2',
-    deptName: '运营部',
-    pre: { hc: { reg: 9, other: 0 }, salary: { month: 52.6, year: 630.1 } },
-    post: { hc: { reg: 9, other: 0 }, salary: { month: 52.6, year: 630.1 } },
-    diff: { hc: { reg: 0, other: 0 }, salary: { month: 0, year: 0 } },
-  },
-  {
-    id: '3',
-    deptName: '测试部',
-    pre: { hc: { reg: 5, other: 0 }, salary: { month: 22.2, year: 265.5 } },
-    post: { hc: { reg: 5, other: 0 }, salary: { month: 22.2, year: 265.5 } },
-    diff: { hc: { reg: 0, other: 0 }, salary: { month: 0, year: 0 } },
-  },
-  {
-    id: '4',
-    deptName: '策划部',
-    pre: { hc: { reg: 9, other: 0 }, salary: { month: 69.3, year: 829.8 } },
-    post: { hc: { reg: 10, other: 0 }, salary: { month: 77.1, year: 923.0 } },
-    diff: { hc: { reg: 1, other: 0 }, salary: { month: 7.8, year: 93.2 } },
-  },
-  {
-    id: '5',
-    deptName: '客户端',
-    pre: { hc: { reg: 4, other: 0 }, salary: { month: 32.0, year: 383.7 } },
-    post: { hc: { reg: 4, other: 0 }, salary: { month: 32.0, year: 383.7 } },
-    diff: { hc: { reg: 0, other: 0 }, salary: { month: 0, year: 0 } },
-  },
-];
+export const summaryData: AdjustmentSummaryItem[] = generateSummaryDataTree();
 
 const generateMonthlyData = (baseSalary: number) => {
   const months: any = {};
   for (let i = 1; i <= 12; i++) {
     months[i] = {
       salary: baseSalary,
-      project: '项目A'
+      project: '项目A',
+      subsidy: 0
     };
   }
   return months;
@@ -105,9 +82,9 @@ const asSalary = (value: any): number => {
 }
 
 const buildEmptyMonths = () => {
-  const months: Record<number, { salary: number; project?: string }> = {}
+  const months: Record<number, { salary: number; project?: string; subsidy?: number }> = {}
   for (let i = 1; i <= 12; i++) {
-    months[i] = { salary: 0 }
+    months[i] = { salary: 0, subsidy: 0 }
   }
   return months
 }
@@ -125,12 +102,13 @@ const sortDeptChildren = (children: BudgetItem[]) => {
   })
 }
 
-const recalcTree = (item: BudgetItem): { months: Record<number, { salary: number; project?: string }>; hcCount: number } => {
+const recalcTree = (item: BudgetItem): { months: Record<number, { salary: number; project?: string; subsidy?: number }>; hcCount: number } => {
   if (item.type === 'person') {
     const nextMonths = buildEmptyMonths()
     for (let m = 1; m <= 12; m++) {
       const salary = asSalary(item.months?.[m]?.salary)
-      nextMonths[m] = { ...item.months?.[m], salary }
+      const subsidy = asSalary(item.months?.[m]?.subsidy)
+      nextMonths[m] = { ...item.months?.[m], salary, subsidy }
     }
     item.months = nextMonths
     item.totalYear = Number(Object.values(nextMonths).reduce((sum, entry) => sum + asSalary(entry.salary), 0).toFixed(1))

@@ -6,3 +6,7 @@ node_modules
 /HCM0107/dist
 /HCM1229/dist
 /temp_comment_widget
+.trae/
+**/vite.config.ts.timestamp-*.mjs
+mobile.html
+HCM0107/plan_*.md

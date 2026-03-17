@@ -18,14 +18,27 @@
           <a-menu-item key="2"><bar-chart-outlined /> 报表中心</a-menu-item>
           <a-sub-menu key="3">
             <template #title><file-text-outlined /> 编制管理</template>
-            <a-menu-item key="3-1">审批中心</a-menu-item>
-            <a-menu-item key="3-2">工薪预算驾驶舱</a-menu-item>
-            <a-menu-item key="3-3">预算划转</a-menu-item>
-            <a-menu-item key="3-4" v-if="userStore.hasPermission('finance')">预算调整</a-menu-item>
-            <a-menu-item key="3-5" v-if="userStore.hasPermission('finance')">预算编制/调整</a-menu-item>
-            <a-menu-item key="3-6" v-if="userStore.hasPermission('finance')">过渡期HC申请</a-menu-item>
-            <a-menu-item key="3-7" v-if="userStore.hasPermission('finance')">过渡期HC审批</a-menu-item>
-            <a-menu-item key="3-8" v-if="userStore.hasPermission('finance')">预算编制（过渡期HC）</a-menu-item>
+            <a-sub-menu key="3-9-group" title="审批中心">
+              <a-menu-item key="3-1">审批中心-web</a-menu-item>
+              <a-menu-item key="3-10" v-if="userStore.hasPermission('finance')">过渡期HC审批-移动端</a-menu-item>
+              <a-menu-item key="3-11" v-if="userStore.hasPermission('finance')">预算审批-移动端</a-menu-item>
+            </a-sub-menu>
+            
+            <a-sub-menu key="3-2-group" title="工薪预算驾驶舱">
+              <a-menu-item key="3-2">驾驶舱landingpage</a-menu-item>
+              <a-menu-item key="3-4" v-if="userStore.hasPermission('finance')">预算调整</a-menu-item>
+            </a-sub-menu>
+
+            <a-sub-menu key="3-6-group" title="过渡期HC">
+              <a-menu-item key="3-6" v-if="userStore.hasPermission('finance')">过渡期HC申请</a-menu-item>
+              <a-menu-item key="3-7" v-if="userStore.hasPermission('finance')">过渡期HC审批</a-menu-item>
+              <a-menu-item key="3-8" v-if="userStore.hasPermission('finance')">预算编制（过渡期HC）</a-menu-item>
+            </a-sub-menu>
+
+            <a-sub-menu key="3-3-group" title="Others">
+              <a-menu-item key="3-3">预算划转</a-menu-item>
+              <a-menu-item key="3-5" v-if="userStore.hasPermission('finance')">预算编制/调整</a-menu-item>
+            </a-sub-menu>
           </a-sub-menu>
         </a-menu>
       </div>
@@ -86,13 +99,17 @@ const handleMenuClick = ({ key }: { key: string }) => {
     router.push('/transition-hc-approval')
   } else if (key === '3-8') {
     router.push('/budget-adjust-transition-hc')
+  } else if (key === '3-10') {
+    router.push('/transition-hc-approval-mobile')
+  } else if (key === '3-11') {
+    router.push('/budget-approval-mobile')
   }
 }
 
 watch(
   () => route.path,
   (path) => {
-    isMobileApprovalRoute.value = path.includes('/transition-hc-approval-mobile')
+    isMobileApprovalRoute.value = path.includes('/transition-hc-approval-mobile') || path.includes('/budget-approval-mobile')
     if (path.includes('approval-center')) {
       currentMenu.value = ['3-1']
     } else if (path.includes('salary-budget')) {
@@ -109,6 +126,10 @@ watch(
       currentMenu.value = ['3-7']
     } else if (path.includes('budget-adjust-transition-hc')) {
       currentMenu.value = ['3-8']
+    } else if (path.includes('transition-hc-approval-mobile')) {
+      currentMenu.value = ['3-10']
+    } else if (path.includes('budget-approval-mobile')) {
+      currentMenu.value = ['3-11']
     }
   },
   { immediate: true }
