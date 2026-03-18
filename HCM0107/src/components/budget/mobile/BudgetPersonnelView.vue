@@ -1,22 +1,46 @@
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { getChangeClass } from '../../../utils/budgetApprovalMobile'
 import type { BudgetPersonnelSection } from '../../../types/budgetApprovalMobile'
 
-defineProps<{
+const props = defineProps<{
   personnelSections: BudgetPersonnelSection[]
 }>()
+
+const expandedCardNames = ref<Set<string>>(new Set())
+
+const isNoChangeCard = (group: BudgetPersonnelSection) => {
+  if (!group.metrics.length) return true
+  return group.metrics.every(metric => metric.changeType === 'neutral')
+}
+
+const isCollapsed = (group: BudgetPersonnelSection) => {
+  return isNoChangeCard(group) && !expandedCardNames.value.has(group.name)
+}
+
+const toggleCard = (group: BudgetPersonnelSection) => {
+  if (!isNoChangeCard(group)) return
+  const next = new Set(expandedCardNames.value)
+  if (next.has(group.name)) {
+    next.delete(group.name)
+  } else {
+    next.add(group.name)
+  }
+  expandedCardNames.value = next
+}
 </script>
 
 <template>
   <div class="personnel-view">
-    <div v-for="(group, index) in personnelSections" :key="index" class="card">
-      <div class="card-header">
+    <div v-for="group in props.personnelSections" :key="group.name" class="card" :class="{ 'card-collapsed': isCollapsed(group) }">
+      <div class="card-header" :class="{ 'card-header-collapsible': isNoChangeCard(group) }" @click="toggleCard(group)">
         <div class="indicator" :style="{ backgroundColor: group.color }"></div>
         <span class="group-name">{{ group.name }}</span>
+        <span v-if="isCollapsed(group)" class="collapsed-status">无变化</span>
       </div>
       
-      <div class="card-content">
+      <div v-if="!isCollapsed(group)" class="card-content">
         <div v-for="(metric, mIndex) in group.metrics" :key="mIndex" class="metric-row" :class="{ 'border-bottom': mIndex < group.metrics.length - 1 }">
           <div class="metric-label">{{ metric.label }}</div>
           <div class="metric-details">
@@ -62,6 +86,10 @@ defineProps<{
   align-items: center;
 }
 
+.card-header-collapsible {
+  cursor: pointer;
+}
+
 .indicator {
   width: 4px;
   height: 14px;
@@ -73,6 +101,17 @@ defineProps<{
   font-weight: 700;
   font-size: 14px;
   color: #374151;
+}
+
+.collapsed-status {
+  font-weight: 500;
+  font-size: 14px;
+  color: #9ca3af;
+  margin-left: auto;
+}
+
+.card-collapsed .card-header {
+  border-bottom: 0;
 }
 
 .card-content {

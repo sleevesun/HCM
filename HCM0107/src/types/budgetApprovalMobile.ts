@@ -41,6 +41,7 @@ export interface BudgetApprovalMobileData {
 
 export interface BudgetScenarioThreeSummaryMetric {
   label: string
+  before: string
   after: string
   change: string
   changeType: BudgetChangeType

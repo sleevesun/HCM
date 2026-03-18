@@ -36,8 +36,9 @@ const handleToggle = (item: BudgetScenarioThreeAccordionItem) => {
       <div v-for="metric in overviewMetrics" :key="metric.label" class="overview-row">
         <span class="overview-label">{{ metric.label }}</span>
         <span class="overview-value">
-          {{ metric.after }}
-          <span class="overview-change" :class="getChangeClass(metric.changeType)">({{ metric.change }})</span>
+          <span class="overview-before">{{ metric.before }}</span>
+          <span class="overview-arrow">→</span>
+          <span class="overview-after" :class="getChangeClass(metric.changeType)">{{ metric.after }}</span>
         </span>
       </div>
     </section>
@@ -51,18 +52,25 @@ const handleToggle = (item: BudgetScenarioThreeAccordionItem) => {
           :disabled="isItemDisabled(item)"
           @click="handleToggle(item)"
         >
-          <span class="header-title">{{ item.title }}</span>
-          <div class="header-summary">
+          <div class="header-top">
+            <span class="header-title">{{ item.title }}</span>
+            <span v-if="isItemDisabled(item)" class="header-static-tag">无变化</span>
+            <span v-else class="header-arrow" :class="{ expanded: activeKey === item.key }">⌄</span>
+          </div>
+          <div class="header-metrics">
             <div v-for="summary in item.summaryMetrics" :key="summary.label" class="summary-line">
-              <span class="summary-label">申请后{{ summary.label }}</span>
-              <div class="summary-right">
+              <span class="summary-label">{{ summary.label }}</span>
+              <div v-if="isItemDisabled(item)" class="summary-right static">
+                <span class="summary-static-label">无变化</span>
                 <span class="summary-val">{{ summary.after }}</span>
-                <span class="summary-change" :class="getChangeClass(summary.changeType)">({{ summary.change }})</span>
+              </div>
+              <div v-else class="summary-right">
+                <span class="summary-before">{{ summary.before }}</span>
+                <span class="summary-arrow">→</span>
+                <span class="summary-after" :class="getChangeClass(summary.changeType)">{{ summary.after }}</span>
               </div>
             </div>
           </div>
-          <span v-if="!isItemDisabled(item)" class="header-arrow" :class="{ expanded: activeKey === item.key }">⌄</span>
-          <span v-else class="header-arrow placeholder"></span>
         </button>
         <div class="accordion-panel" :class="{ expanded: activeKey === item.key }">
           <div v-for="metric in item.panelMetrics" :key="metric.label" class="panel-row">
@@ -78,7 +86,7 @@ const handleToggle = (item: BudgetScenarioThreeAccordionItem) => {
               </div>
               <div class="metric-line">
                 <span class="line-name">变化</span>
-                <span class="line-value strong" :class="getChangeClass(metric.changeType)">{{ metric.change }}</span>
+                <span class="line-value change-value" :class="getChangeClass(metric.changeType)">{{ metric.change }}</span>
               </div>
             </div>
           </div>
@@ -130,13 +138,41 @@ const handleToggle = (item: BudgetScenarioThreeAccordionItem) => {
 
 .overview-value {
   font-size: 13px;
-  color: #111827;
-  font-weight: 500;
   text-align: right;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.overview-change {
-  margin-left: 4px;
+.overview-before {
+  color: #4b5563;
+}
+
+.overview-arrow {
+  color: #9ca3af;
+}
+
+.overview-after {
+  font-weight: 700;
+}
+
+.accordion-header {
+  width: 100%;
+  border: 0;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 10px;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .accordion-item {
@@ -150,19 +186,6 @@ const handleToggle = (item: BudgetScenarioThreeAccordionItem) => {
   margin-bottom: 0;
 }
 
-.accordion-header {
-  width: 100%;
-  border: 0;
-  background: #fff;
-  display: grid;
-  grid-template-columns: 88px 1fr 20px;
-  align-items: center;
-  gap: 8px;
-  padding: 10px;
-  text-align: left;
-  touch-action: manipulation;
-}
-
 .accordion-header:active:not(:disabled) {
   background: #f9fafb;
 }
@@ -173,10 +196,10 @@ const handleToggle = (item: BudgetScenarioThreeAccordionItem) => {
   color: #374151;
 }
 
-.header-summary {
+.header-metrics {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -193,6 +216,7 @@ const handleToggle = (item: BudgetScenarioThreeAccordionItem) => {
   overflow: hidden;
   text-overflow: ellipsis;
   margin-right: 8px;
+  color: #4b5563;
 }
 
 .summary-right {
@@ -204,10 +228,10 @@ const handleToggle = (item: BudgetScenarioThreeAccordionItem) => {
 
 .summary-val {
   color: #111827;
+  font-weight: 700;
 }
 
 .header-arrow {
-  justify-self: end;
   color: #6b7280;
   transition: transform 0.2s ease;
 }
@@ -216,9 +240,30 @@ const handleToggle = (item: BudgetScenarioThreeAccordionItem) => {
   transform: rotate(180deg);
 }
 
-.header-arrow.placeholder {
-  display: inline-block;
-  width: 1em;
+.header-static-tag {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.summary-static-label {
+  color: #9ca3af;
+}
+
+.summary-right.static {
+  gap: 8px;
+}
+
+.summary-before {
+  color: #4b5563;
+}
+
+.summary-arrow {
+  color: #9ca3af;
+}
+
+.summary-after {
+  font-weight: 700;
 }
 
 .accordion-panel {
@@ -273,6 +318,10 @@ const handleToggle = (item: BudgetScenarioThreeAccordionItem) => {
 
 .line-value {
   color: #4b5563;
+}
+
+.change-value {
+  font-weight: 600;
 }
 
 .text-red {

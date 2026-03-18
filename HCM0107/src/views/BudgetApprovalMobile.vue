@@ -9,6 +9,7 @@ import BudgetScenarioThreeView from '../components/budget/mobile/BudgetScenarioT
 import { fetchBudgetApprovalMobileData, submitBudgetApprovalDecision } from '../services/budgetApprovalMobileService'
 import type {
   BudgetApprovalMobileData,
+  BudgetPersonnelSection,
   BudgetScenarioThreeAccordionItem,
   BudgetScenarioThreeGroup,
   BudgetScenarioThreeSummaryMetric
@@ -34,7 +35,40 @@ const handleDecision = async (decision: 'approve' | 'reject') => {
 
 const basicInfo = computed(() => pageData.value?.basicInfo)
 const metricSections = computed(() => pageData.value?.metricSections || [])
-const personnelSections = computed(() => pageData.value?.personnelSections || [])
+const personnelSections = computed<BudgetPersonnelSection[]>(() => {
+  const source = pageData.value?.personnelSections || []
+  if (!source.length) return []
+
+  const totalSection = source.find(section => section.name === '总计')
+  const regularSection = source.find(section => section.name === '正编')
+
+  const budgetMetricLabels = new Set(['离职补偿金(万)', '加班费(万)'])
+  const deptBudgetMetrics = regularSection?.metrics.filter(metric => budgetMetricLabels.has(metric.label)) || []
+
+  const middleSections = source
+    .filter(section => section.name !== '总计')
+    .map(section => {
+      if (section.name !== '正编') return section
+      return {
+        ...section,
+        metrics: section.metrics.filter(metric => !budgetMetricLabels.has(metric.label))
+      }
+    })
+
+  const result: BudgetPersonnelSection[] = []
+  if (totalSection) result.push(totalSection)
+  result.push(...middleSections)
+
+  if (deptBudgetMetrics.length > 0) {
+    result.push({
+      name: '部门级预算',
+      color: '#6b7280',
+      metrics: deptBudgetMetrics
+    })
+  }
+
+  return result
+})
 
 const toNumber = (value: string) => Number(value.replace(/,/g, ''))
 
@@ -46,24 +80,15 @@ const toChangeType = (change: string): 'positive' | 'negative' | 'neutral' => {
 }
 
 const scenarioThreeOverviewMetrics = computed<BudgetScenarioThreeSummaryMetric[]>(() => {
-  const hcSection = metricSections.value.find(section => section.title === 'HC变化')
   const annualSection = metricSections.value.find(section => section.title === '年度工薪预算变化（万）')
-  if (!hcSection || !annualSection) return []
-  const hcBefore = hcSection.details.reduce((sum, item) => sum + toNumber(item.before), 0)
-  const hcAfter = hcSection.details.reduce((sum, item) => sum + toNumber(item.after), 0)
+  if (!annualSection) return []
   const annualBefore = annualSection.details.reduce((sum, item) => sum + toNumber(item.before), 0)
   const annualAfter = annualSection.details.reduce((sum, item) => sum + toNumber(item.after), 0)
-  const hcChange = hcAfter - hcBefore
   const annualChange = annualAfter - annualBefore
   return [
     {
-      label: '申请后总HC',
-      after: String(hcAfter),
-      change: hcChange > 0 ? `+${hcChange}` : String(hcChange),
-      changeType: hcChange > 0 ? 'positive' : hcChange < 0 ? 'negative' : 'neutral'
-    },
-    {
-      label: '申请后总工薪预算(万)',
+      label: '总工薪预算(万)',
+      before: annualBefore.toLocaleString('zh-CN', { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
       after: annualAfter.toLocaleString('zh-CN', { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
       change: annualChange > 0 ? `+${annualChange.toFixed(1)}` : annualChange.toFixed(1),
       changeType: annualChange > 0 ? 'positive' : annualChange < 0 ? 'negative' : 'neutral'
@@ -72,21 +97,19 @@ const scenarioThreeOverviewMetrics = computed<BudgetScenarioThreeSummaryMetric[]
 })
 
 const scenarioThreeGroups = computed<BudgetScenarioThreeGroup[]>(() => {
+  const allowedPersonnelTypes = new Set(['正编', '人力外包', '实习'])
   const personnelItems: BudgetScenarioThreeAccordionItem[] = personnelSections.value
     .filter(section => section.name !== '总计')
+    .filter(section => allowedPersonnelTypes.has(section.name))
     .map(section => {
       const hcMetric = section.metrics.find(metric => metric.label === 'HC')
       const annualMetric = section.metrics.find(metric => metric.label === '年度工薪(万)')
       
-      // Filter logic:
-      // For '正编', exclude '离职补偿金(万)' and '加班费(万)'
-      // For others, exclude '月度工薪(万)'
       const panelMetrics = section.metrics.filter(metric => {
         if (section.name === '正编') {
           return metric.label !== '离职补偿金(万)' && metric.label !== '加班费(万)'
-        } else {
-          return metric.label !== '月度工薪(万)'
         }
+        return true
       })
 
       return {
@@ -94,11 +117,11 @@ const scenarioThreeGroups = computed<BudgetScenarioThreeGroup[]>(() => {
         title: section.name,
         summaryMetrics: [
           hcMetric
-            ? { label: 'HC', after: hcMetric.after, change: hcMetric.change, changeType: hcMetric.changeType }
-            : { label: 'HC', after: '0', change: '0', changeType: 'neutral' as const },
+            ? { label: 'HC', before: hcMetric.before, after: hcMetric.after, change: hcMetric.change, changeType: hcMetric.changeType }
+            : { label: 'HC', before: '0', after: '0', change: '0', changeType: 'neutral' as const },
           annualMetric
-            ? { label: '年度工薪(万)', after: annualMetric.after, change: annualMetric.change, changeType: annualMetric.changeType }
-            : { label: '年度工薪(万)', after: '0', change: '0', changeType: 'neutral' as const }
+            ? { label: '年度工薪(万)', before: annualMetric.before, after: annualMetric.after, change: annualMetric.change, changeType: annualMetric.changeType }
+            : { label: '年度工薪(万)', before: '0', after: '0', change: '0', changeType: 'neutral' as const }
         ],
         panelMetrics: panelMetrics
       }
@@ -112,6 +135,7 @@ const scenarioThreeGroups = computed<BudgetScenarioThreeGroup[]>(() => {
       title: detail.label,
       summaryMetrics: [{
         label: '申请后预算(万)',
+        before: detail.before,
         after: detail.after,
         change: detail.change,
         changeType: toChangeType(detail.change)
