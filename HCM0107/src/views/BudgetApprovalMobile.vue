@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { NavBar as VanNavBar, showToast } from 'vant'
+import { NavBar as VanNavBar, showToast, Field as VanField } from 'vant'
 import BudgetBasicInfo from '../components/budget/mobile/BudgetBasicInfo.vue'
 import BudgetMetricView from '../components/budget/mobile/BudgetMetricView.vue'
 import BudgetPersonnelView from '../components/budget/mobile/BudgetPersonnelView.vue'
@@ -19,6 +19,20 @@ const router = useRouter()
 const viewMode = ref<'metric' | 'personnel' | 'scenario-three'>('scenario-three')
 const pageData = ref<BudgetApprovalMobileData | null>(null)
 const activeAccordionKey = ref<string | null>(null)
+const opinion = ref('')
+
+const applyReason = '1. 新增2个产研团队HC，用于支持2026年核心项目开发。\n2. 相应增加年度工薪预算及配套部门级预算。'
+
+const flowRecords = [
+  { node: 'HRD', operator: '申请人', result: '发起申请', operatedAt: '2026-03-24 10:00', comment: '发起2026年HC与预算调整申请' },
+  { node: 'C&B', operator: '曾天', result: '已同意', operatedAt: '2026-03-24 11:30', comment: '预算范围合理，同意' },
+  { node: '二级部门负责人', operator: '张三', result: '已同意', operatedAt: '2026-03-24 14:00', comment: '同意' },
+  { node: 'HRBP Head', operator: '刘伟', result: '已同意', operatedAt: '2026-03-24 16:00', comment: '符合业务规划，同意' },
+  { node: '业务HR负责人', operator: '杨晓曦', result: '已同意', operatedAt: '2026-03-24 17:30', comment: '同意' },
+  { node: '1.1级部门负责人', operator: '李四', result: '待审批', operatedAt: '-', comment: '-' },
+  { node: '集团HR负责人&CEO审批', operator: '王五', result: '待审批', operatedAt: '-', comment: '-' },
+  { node: '集团HR负责人&CEO审批', operator: '赵六', result: '待审批', operatedAt: '-', comment: '-' }
+]
 
 const onClickLeft = () => {
   router.back()
@@ -29,6 +43,10 @@ const switchView = (mode: 'metric' | 'personnel' | 'scenario-three') => {
 }
 
 const handleDecision = async (decision: 'approve' | 'reject') => {
+  if (decision === 'reject' && !opinion.value.trim()) {
+    showToast('请先输入审批意见再进行驳回操作')
+    return
+  }
   const result = await submitBudgetApprovalDecision(decision)
   showToast(result.decision === 'approve' ? '已通过' : '已拒绝')
 }
@@ -206,13 +224,52 @@ onMounted(async () => {
 
       <BudgetMetricView v-if="viewMode === 'metric'" :metric-sections="metricSections" />
       <BudgetPersonnelView v-else-if="viewMode === 'personnel'" :personnel-sections="personnelSections" />
-      <BudgetScenarioThreeView
-        v-else
-        :overview-metrics="scenarioThreeOverviewMetrics"
-        :groups="scenarioThreeGroups"
-        :active-key="activeAccordionKey"
-        @toggle="handleToggleAccordion"
-      />
+      <template v-else>
+        <BudgetScenarioThreeView
+          :overview-metrics="scenarioThreeOverviewMetrics"
+          :groups="scenarioThreeGroups"
+          :active-key="activeAccordionKey"
+          @toggle="handleToggleAccordion"
+        />
+        <div class="scenario-three-extra">
+          <div class="extra-card">
+            <div class="section-mini-title">申请说明</div>
+            <div class="reason-content">{{ applyReason }}</div>
+          </div>
+
+          <div class="extra-card flow-block">
+            <div class="section-mini-title">审批记录</div>
+            <div class="flow-list">
+              <div v-for="(item, index) in flowRecords" :key="index" class="flow-node">
+                <div class="flow-node-body">
+                  <div class="flow-node-index">{{ index + 1 }}</div>
+                  <div class="flow-node-content">
+                    <div class="flow-line flow-head">
+                      <span class="flow-title">审批人：{{ item.operator }}</span>
+                      <span class="flow-result" :class="{'pending': item.result === '待审批'}">{{ item.result }}</span>
+                    </div>
+                    <div class="flow-line flow-desc">审批节点：{{ item.node }}</div>
+                    <div class="flow-line flow-time">审批时间：{{ item.operatedAt }}</div>
+                    <div class="flow-line flow-opinion" v-if="item.comment !== '-'">审批意见：{{ item.comment }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="extra-card submit-panel">
+            <div class="section-mini-title">审批意见</div>
+            <VanField
+              v-model="opinion"
+              type="textarea"
+              rows="4"
+              autosize
+              maxlength="500"
+              placeholder="请输入审批意见..."
+            />
+          </div>
+        </div>
+      </template>
     </main>
 
     <div class="action-bar safe-bottom">
@@ -314,6 +371,116 @@ onMounted(async () => {
 
 .safe-bottom {
   padding-bottom: calc(12px + env(safe-area-inset-bottom));
+}
+
+.scenario-three-extra {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.extra-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.section-mini-title {
+  font-size: 14px;
+  color: #333;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  line-height: 22px;
+}
+
+.reason-content {
+  font-size: 14px;
+  line-height: 22px;
+  color: #4b5563;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.flow-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.flow-node {
+  width: 100%;
+}
+
+.flow-node + .flow-node {
+  border-top: 1px solid #f3f4f6;
+}
+
+.flow-node-body {
+  padding: 10px 0;
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.flow-node-index {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flow-node-content {
+  min-width: 0;
+}
+
+.flow-line {
+  min-height: 24px;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.flow-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flow-title {
+  color: #111827;
+  font-weight: 700;
+}
+
+.flow-result {
+  color: #111827;
+  font-weight: 400;
+}
+
+.flow-result.pending {
+  color: #f59e0b;
+}
+
+.flow-desc,
+.flow-time,
+.flow-opinion {
+  color: #6b7280;
+}
+
+.submit-panel {
+  padding: 16px;
+}
+
+:deep(.van-cell) {
+  padding: 0;
+  font-size: 14px;
+  line-height: 22px;
+  background: transparent;
 }
 
 @media (max-width: 375px) {

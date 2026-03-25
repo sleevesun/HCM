@@ -61,7 +61,6 @@ const handleToggle = (item: BudgetScenarioThreeAccordionItem) => {
             <div v-for="summary in item.summaryMetrics" :key="summary.label" class="summary-line">
               <span class="summary-label">{{ summary.label }}</span>
               <div v-if="isItemDisabled(item)" class="summary-right static">
-                <span class="summary-static-label">无变化</span>
                 <span class="summary-val">{{ summary.after }}</span>
               </div>
               <div v-else class="summary-right">
