@@ -300,19 +300,29 @@
                  <strong>{{ text }}</strong>
                </template>
                <template v-else-if="['severance', 'overtime', 'signon'].includes(column.dataIndex as string)">
-                 <template v-if="record.label === '已用金额(万)' && text !== '-'">
-                   <a-popover placement="left" trigger="click" overlayClassName="custom-tooltip">
+                 <template v-if="(record.label === '已用金额(万)' || (record.label === '当前预算金额(万)' && column.dataIndex === 'signon')) && text !== '-'">
+                   <a-popover placement="bottomRight" trigger="click" overlayClassName="custom-tooltip">
                      <template #title>
                        <div class="tooltip-title" style="font-size: 13px; font-weight: 600; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px;">
                          {{ column.title }} - 每月明细
                        </div>
                      </template>
                      <template #content>
-                       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; font-size: 12px; color: var(--text-primary); min-width: 200px;">
-                         <div v-for="(m, i) in months" :key="m" style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">
-                           <span style="color: var(--text-secondary)">{{ m }}</span>
-                           <span style="font-weight: 500;">{{ getMockMonthBreakdown(record, column.dataIndex as string, i) }}</span>
-                         </div>
+                       <div style="padding: 4px; overflow-x: auto;">
+                         <table style="border-collapse: collapse; text-align: right; font-size: 12px; color: var(--text-primary);">
+                           <thead>
+                             <tr>
+                               <th v-for="m in months" :key="'th-'+m" style="padding: 4px 12px; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); font-weight: normal; white-space: nowrap; min-width: 65px; text-align: right;">{{ m }}</th>
+                             </tr>
+                           </thead>
+                           <tbody>
+                             <tr>
+                               <td v-for="(m, i) in months" :key="'td-'+m" style="padding: 8px 12px 4px; font-weight: 500; font-variant-numeric: tabular-nums;">
+                                 {{ getMockMonthBreakdown(record, column.dataIndex as string, i) }}
+                               </td>
+                             </tr>
+                           </tbody>
+                         </table>
                        </div>
                      </template>
                      <a style="font-weight: 600; color: var(--primary-color); cursor: pointer; border-bottom: 1px dashed var(--primary-color); padding-bottom: 1px;">{{ text }}</a>
