@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-6 bg-gray-50 text-sm">
+    <div class="bg-white shadow rounded-xl">
+        <div class="p-4 border-b flex items-center justify-between">
+            <h2 class="font-bold">合并视图 (颜色表示变动)</h2>
+            <div class="flex items-center gap-4 text-xs">
+                <span class="flex items-center gap-1"><i class="w-3 h-3 bg-red-100 border"></i> 增加</span>
+                <span class="flex items-center gap-1"><i class="w-3 h-3 bg-green-100 border"></i> 减少</span>
+            </div>
+        </div>
+        <table class="w-full border-collapse">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="p-3 border text-left">人员信息</th>
+                    <th class="p-3 border text-center">指标</th>
+                    <th class="p-3 border">1月</th><th class="p-3 border">2月</th><th class="p-3 border">3月</th><th class="p-3 border">4月</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-t">
+                    <td rowspan="2" class="p-3 border font-bold bg-white">陈力文</td>
+                    <td class="p-1 border text-center text-gray-400 bg-gray-50">现状</td>
+                    <td class="p-1 border text-center bg-gray-50 text-gray-400">10.4</td>
+                    <td class="p-1 border text-center bg-gray-50 text-gray-400">10.4</td>
+                    <td class="p-1 border text-center bg-gray-50 text-gray-400">10.4</td>
+                    <td class="p-1 border text-center bg-gray-50 text-gray-400">10.4</td>
+                </tr>
+                <tr>
+                    <td class="p-1 border text-center text-blue-600 font-bold">调整</td>
+                    <td class="p-1 border text-center italic text-gray-400">10.4</td>
+                    <td class="p-1 border text-center bg-red-50 text-red-600 font-bold">12.0 ↑</td>
+                    <td class="p-1 border text-center bg-red-50 text-red-600 font-bold">12.0 ↑</td>
+                    <td class="p-1 border text-center bg-red-50 text-red-600 font-bold">12.0 ↑</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

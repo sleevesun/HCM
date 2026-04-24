@@ -1,0 +1,159 @@
+/* 工薪预算驾驶舱 - 设计令牌扩展 */
+
+:root {
+  /* ========================================
+     方案一：视觉层级增强 - 专用颜色
+     ======================================== */
+  --year-2026-bg: #F0F5FF;
+  --year-2027-bg: #F9F0FF;
+  --year-2026-gradient-start: #0052D9;
+  --year-2026-gradient-end: #003CA8;
+  --year-2027-gradient-start: #722ED1;
+  --year-2027-gradient-end: #531DAB;
+  --year-separator-color: #0052D9;
+  --year-separator-width: 3px;
+  --year-gap: 8px;
+
+  --module-header-bg: #4E5969;
+  --module-header-text: #FFFFFF;
+  --module-separator-color: #C9CDD4;
+  --module-separator-width: 2px;
+
+  --dimension-separator-color: #E5E6EB;
+  --dimension-separator-style: dashed;
+  --dimension-separator-width: 1px;
+
+  --type-separator-color: #F2F3F5;
+  --type-separator-width: 1px;
+
+  --data-primary-color: #1D2129;
+  --data-secondary-color: #4E5969;
+  --data-primary-weight: 600;
+  --data-secondary-weight: 400;
+
+  --zebra-even-bg: #FAFBFC;
+  --zebra-odd-bg: #FFFFFF;
+
+  /* ========================================
+     方案二：渐进式信息披露 - 专用颜色
+     ======================================== */
+  --summary-bg: #F7F8FA;
+  --module-border: #E5E6EB;
+  --expand-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  --status-success-bg: #E8FFEA;
+  --status-success-text: #00B42A;
+  --status-success-border: #00B42A;
+
+  --status-warning-bg: #FFF7E8;
+  --status-warning-text: #FF7D00;
+  --status-warning-border: #FF7D00;
+
+  --status-risk-bg: #FFECE8;
+  --status-risk-text: #F53F3F;
+  --status-risk-border: #F53F3F;
+
+  --expandable-module-bg: #FFFFFF;
+  --expandable-header-hover: #F2F3F5;
+
+  /* ========================================
+     方案三：卡片式布局 - 专用颜色
+     ======================================== */
+  --card-bg: #FFFFFF;
+  --card-border: #E5E6EB;
+  --card-radius: 8px;
+  --card-padding: 20px;
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --card-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --card-transition: all 0.3s ease;
+
+  --card-risk-border-left: 4px solid #F53F3F;
+
+  --dashboard-bg: linear-gradient(135deg, #F5F7FA 0%, #FAFBFC 100%);
+  --dashboard-radius: 6px;
+
+  --kpi-label-color: #86909C;
+  --kpi-value-color: #1D2129;
+  --kpi-value-size: 24px;
+  --kpi-value-weight: 700;
+
+  /* ========================================
+     员工类型颜色系统
+     ======================================== */
+  --employee-reg-color: #165DFF;
+  --employee-reg-icon: '👤';
+  --employee-intern-color: #00B42A;
+  --employee-intern-icon: '🎓';
+  --employee-dispatch-color: #FF7D00;
+  --employee-dispatch-icon: '🔄';
+  --employee-outsourcing-color: #722ED1;
+  --employee-outsourcing-icon: '📦';
+  --employee-parttime-color: #86909C;
+  --employee-parttime-icon: '⏱️';
+
+  /* ========================================
+     通用过渡和动画
+     ======================================== */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  --animation-slide-down: slideDown 0.3s ease-out;
+  --animation-fade-in: fadeIn 0.2s ease-out;
+}
+
+/* 全局动画定义 */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ========================================
+   响应式断点辅助类
+   ======================================== */
+
+/* 移动端 */
+@media (max-width: 768px) {
+  :root {
+    --card-padding: 16px;
+    --kpi-value-size: 20px;
+  }
+}
+
+/* 平板 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  :root {
+    --card-padding: 18px;
+  }
+}
+
+/* 桌面端 */
+@media (min-width: 1025px) {
+  :root {
+    --card-padding: 20px;
+  }
+}

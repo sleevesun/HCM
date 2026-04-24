@@ -1,5 +1,9 @@
 {
+  "scripts": {
+    "dev:hcm0107": "npm run dev --prefix HCM0107"
+  },
   "dependencies": {
+    "docx": "^9.6.1",
     "vue-router": "^4.6.4"
   }
 }

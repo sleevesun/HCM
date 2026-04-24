@@ -9,8 +9,11 @@ import {
 } from '../mocks/transitionHcApprovalApi'
 import { handleApiError } from '../utils/error-handler'
 import { useRouter } from 'vue-router'
+import { useSalaryBudgetStore } from '../stores/salaryBudget'
+import { message } from 'ant-design-vue'
 import FlowReturnButton from '../components/FlowReturnButton.vue'
 
+const store = useSalaryBudgetStore()
 const loading = ref(false)
 const selectedDeptDisplay = ref('')
 const detailId = ref('')
@@ -82,6 +85,29 @@ const handleConfirmAction = () => {
     opinionError.value = '审批意见不能为空'
     return
   }
+  
+  if (actionType.value === 'approve') {
+    // v4.1: 审批通过后生成预算变更日志
+    transitionHCData.value.forEach(row => {
+      // 提取金额 (月薪 * 12 作为年度预算变动值)
+      const monthlySalary = parseFloat(row.salaryDisplay || '0')
+      const annualAmount = monthlySalary * 12
+      
+      store.approveTransitionHC({
+        approvalId: detailId.value,
+        fromDeptId: 'DEPT-SRC-001', 
+        fromDeptName: row.deptName || '研发一部',
+        toDeptId: 'DEPT-TGT-002',
+        toDeptName: selectedDeptDisplay.value.split('/').pop() || '研发二部',
+        hcCount: 1,
+        amount: annualAmount,
+        projectTag: row.projectTag || '通用项目标签',
+        category: '正编'
+      })
+    })
+    message.success('审批通过，已自动同步生成预算变更记录')
+  }
+  
   actionModalOpen.value = false
   opinionError.value = ''
 }

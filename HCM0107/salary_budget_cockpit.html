@@ -1124,10 +1124,16 @@
 
                     // Label
                     const tdLabel = document.createElement('td');
-                    tdLabel.textContent = row.label;
                     tdLabel.style.textAlign = 'center';
                     tdLabel.style.fontSize = '12px';
                     tdLabel.style.color = '#4E5969';
+                    
+                    if (row.label === '剩余HC数' || row.label === '剩余金额(万)') {
+                        const hintText = row.label === '剩余HC数' ? '取当月与12月剩余HC的较小值' : '取当月与12月剩余金额的较小值';
+                        tdLabel.innerHTML = `${row.label} <i class="fa-regular fa-circle-question" title="${hintText}" style="color: #86909C; margin-left: 4px; cursor: help;"></i>`;
+                    } else {
+                        tdLabel.textContent = row.label;
+                    }
                     tr.appendChild(tdLabel);
 
                     // 12 Months Data

@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { DEPT_TREE_STRUCTURE } from '../constants/deptStructure'
+import { BUDGET_ACCOUNTS } from '../constants/budgetAccounts'
+export type BizType = 
+  | 'TRANSFER_OUT' // 带HC调动-调出
+  | 'TRANSFER_IN'  // 带HC调动-调入
+  | 'APPROVAL'     // 预算审批
+  | 'DEPT_MOVE';    // 部门调整 (合并/撤销/剪切)
 
 export interface SalaryDataNode {
   id: string
@@ -17,7 +23,124 @@ export interface SalaryDataNode {
   children?: SalaryDataNode[]
 }
 
+export interface BudgetChangeLogDetail {
+  accountId: string;
+  accountName: string;
+  projectTag: string;
+  amount: number;
+}
+
+export interface BudgetChangeLog {
+  id: string;
+  timestamp: string;
+  type: string;
+  bizType: BizType;
+  deptId: string;
+  deptName: string;
+  category: string;
+  hcChange: number | '-';
+  totalBudgetChange: number;
+  details: BudgetChangeLogDetail[];
+}
+
 export const useSalaryBudgetStore = defineStore('salaryBudget', () => {
+  
+  const changeLogs = ref<BudgetChangeLog[]>([
+    {
+      id: 'LOG-20260410-001',
+      timestamp: '2026-04-10 14:20:00',
+      type: '带HC调动-调出',
+      bizType: 'TRANSFER_OUT',
+      deptId: 'DEPT-001',
+      deptName: '研发一部',
+      category: '正编',
+      hcChange: -5,
+      totalBudgetChange: -300000,
+      details: [
+        // 5人调动，涉及3个项目
+        { accountId: 'ACC-001', accountName: '工资预算', projectTag: '完美世界项目A', amount: -100000 },
+        { accountId: 'ACC-001', accountName: '工资预算', projectTag: '项目B (预研)', amount: -50000 },
+        { accountId: 'ACC-001', accountName: '工资预算', projectTag: '新游戏 C', amount: -30000 },
+        { accountId: 'ACC-002', accountName: '绩效工资', projectTag: '完美世界项目A', amount: -20000 },
+        { accountId: 'ACC-002', accountName: '绩效工资', projectTag: '项目B (预研)', amount: -10000 },
+        { accountId: 'ACC-009', accountName: '养老保险', projectTag: '完美世界项目A', amount: -40000 },
+        { accountId: 'ACC-010', accountName: '公积金', projectTag: '完美世界项目A', amount: -50000 },
+      ]
+    },
+    {
+      id: 'LOG-20260410-002',
+      timestamp: '2026-04-10 14:20:00',
+      type: '带HC调动-调入',
+      bizType: 'TRANSFER_IN',
+      deptId: 'DEPT-002',
+      deptName: '研发二部',
+      category: '正编',
+      hcChange: 5,
+      totalBudgetChange: 300000,
+      details: [
+        { accountId: 'ACC-001', accountName: '工资预算', projectTag: '核心中台项目', amount: 180000 },
+        { accountId: 'ACC-002', accountName: '绩效工资', projectTag: '核心中台项目', amount: 30000 },
+        { accountId: 'ACC-009', accountName: '养老保险', projectTag: '核心中台项目', amount: 40000 },
+        { accountId: 'ACC-010', accountName: '公积金', projectTag: '核心中台项目', amount: 50000 },
+      ]
+    },
+    {
+      id: 'LOG-20260408-001',
+      timestamp: '2026-04-08 10:30:00',
+      type: '预算审批-增量',
+      bizType: 'APPROVAL',
+      deptId: 'DEPT-003',
+      deptName: '销售支持部',
+      category: '加班费',
+      hcChange: '-',
+      totalBudgetChange: 50000,
+      details: [
+        { accountId: 'ACC-013', accountName: '加班费', projectTag: '2026 Q2 促销季', amount: 50000 },
+      ]
+    },
+    {
+      id: 'LOG-20260405-001',
+      timestamp: '2026-04-05 09:00:00',
+      type: '部门调整-合并',
+      bizType: 'DEPT_MOVE',
+      deptId: 'DEPT-OLD-01',
+      deptName: '测试中心-旧',
+      category: '正编',
+      hcChange: -20,
+      totalBudgetChange: -1200000,
+      details: [
+        { accountId: 'ACC-001', accountName: '工资预算', projectTag: '部门合并清算', amount: -1200000 },
+      ]
+    },
+    {
+      id: 'LOG-20260405-002',
+      timestamp: '2026-04-05 09:00:00',
+      type: '部门调整-合并',
+      bizType: 'DEPT_MOVE',
+      deptId: 'DEPT-NEW-01',
+      deptName: '质量保证中心',
+      category: '正编',
+      hcChange: 20,
+      totalBudgetChange: 1200000,
+      details: [
+        { accountId: 'ACC-001', accountName: '工资预算', projectTag: '新部门承接', amount: 1200000 },
+      ]
+    },
+    {
+      id: 'LOG-20260330-001',
+      timestamp: '2026-03-30 16:45:00',
+      type: '部门调整-撤销',
+      bizType: 'DEPT_MOVE',
+      deptId: 'DEPT-ARCHIVE',
+      deptName: '临时项目组',
+      category: '正编',
+      hcChange: -2,
+      totalBudgetChange: -150000,
+      details: [
+        { accountId: 'ACC-001', accountName: '工资预算', projectTag: '项目结束清算', amount: -150000 },
+      ]
+    }
+  ]);
   
   const generateNodeData = (node: any, _year = '2026'): SalaryDataNode => {
     // Re-use logic from Dashboard.vue for consistency, but adapted for new structure
@@ -254,8 +377,99 @@ export const useSalaryBudgetStore = defineStore('salaryBudget', () => {
     }
   }
 
+  /**
+   * 模拟 14 类财务科目金额拆分逻辑 (v4.1)
+   */
+  const generateAccountDetails = (totalAmount: number, projectTag: string): BudgetChangeLogDetail[] => {
+    // 简单模拟拆分比例
+    const ratios: Record<string, number> = {
+      'ACC-001': 0.60, // 工资预算 60%
+      'ACC-002': 0.12, // 绩效工资 12%
+      'ACC-009': 0.08, // 养老保险 8%
+      'ACC-007': 0.06, // 医疗保险 6%
+      'ACC-010': 0.06, // 公积金 6%
+      'ACC-005': 0.04, // 饭补 4%
+      'ACC-003': 0.04, // 商业保险 4%
+    };
+
+    const details: BudgetChangeLogDetail[] = [];
+    let allocated = 0;
+
+    const activeAccounts = BUDGET_ACCOUNTS.filter(acc => ratios[acc.id]);
+    
+    activeAccounts.forEach((acc, index) => {
+      let amount = 0;
+      if (index === activeAccounts.length - 1) {
+        amount = totalAmount - allocated;
+      } else {
+        amount = Math.round(totalAmount * ratios[acc.id]);
+        allocated += amount;
+      }
+      details.push({
+        accountId: acc.id,
+        accountName: acc.name,
+        projectTag,
+        amount
+      });
+    });
+
+    return details;
+  };
+
+  /**
+   * 审批通过后生成对冲日志 (v4.1)
+   * 模拟调出与调入的两条对冲日志逻辑
+   */
+  const approveTransitionHC = (payload: {
+    approvalId: string;
+    fromDeptId: string;
+    fromDeptName: string;
+    toDeptId: string;
+    toDeptName: string;
+    hcCount: number;
+    amount: number;
+    projectTag: string;
+    category: string;
+  }) => {
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    
+    // 1. 生成调出日志
+    const outLog: BudgetChangeLog = {
+      id: `LOG-${payload.approvalId}-OUT`,
+      timestamp,
+      type: '带HC调动-调离',
+      bizType: 'TRANSFER_OUT',
+      deptId: payload.fromDeptId,
+      deptName: payload.fromDeptName,
+      category: payload.category,
+      hcChange: -payload.hcCount,
+      totalBudgetChange: -payload.amount,
+      details: generateAccountDetails(-payload.amount, payload.projectTag)
+    };
+
+    // 2. 生成调入日志
+    const inLog: BudgetChangeLog = {
+      id: `LOG-${payload.approvalId}-IN`,
+      timestamp,
+      type: '带HC调动-调入',
+      bizType: 'TRANSFER_IN',
+      deptId: payload.toDeptId,
+      deptName: payload.toDeptName,
+      category: payload.category,
+      hcChange: payload.hcCount,
+      totalBudgetChange: payload.amount,
+      details: generateAccountDetails(payload.amount, payload.projectTag)
+    };
+
+    // 添加到列表头部
+    changeLogs.value.unshift(inLog, outLog);
+  };
+
   return {
     treeData,
-    toggleRow
+    changeLogs,
+    toggleRow,
+    approveTransitionHC // 导出新 Action
   }
 })

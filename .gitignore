@@ -10,3 +10,7 @@ node_modules
 **/vite.config.ts.timestamp-*.mjs
 mobile.html
 HCM0107/plan_*.md
+HCM0107/.claude/
+HCM0107/settings.json
+HCM0107/.claude/
+HCM0107/settings.json

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .split-container { display: flex; height: 80vh; overflow: hidden; border: 1px solid #ddd; }
+        .pane-left { width: 30%; border-right: 4px solid #3b82f6; overflow-y: auto; background: #f1f5f9; }
+        .pane-right { width: 70%; overflow-x: auto; overflow-y: auto; background: white; }
+    </style>
+</head>
+<body class="p-6 bg-gray-100">
+    <h1 class="text-xl font-bold mb-4 text-center">同步对比视图 (左侧现状 vs 右侧调整)</h1>
+    <div class="split-container rounded-lg shadow-lg">
+        <div class="pane-left">
+            <div class="p-2 bg-gray-200 sticky top-0 font-bold text-xs">申请前 (只读)</div>
+            <table class="w-full text-xs">
+                <tr class="h-12 border-b"><td class="p-2">星云工作室 / 陈力文</td><td class="p-2 font-mono">124.8w</td></tr>
+                <tr class="h-12 border-b"><td class="p-2">星云工作室 / 待招HC</td><td class="p-2 font-mono">75.6w</td></tr>
+            </table>
+        </div>
+        <div class="pane-right">
+            <div class="p-2 bg-blue-50 sticky top-0 font-bold text-xs">申请通过后 (可编辑)</div>
+            <table class="w-full text-xs min-w-[1200px]">
+                <tr class="h-12 border-b bg-gray-50 font-bold">
+                    <td class="p-2 w-32">人员</td><td class="p-2">1月</td><td class="p-2">2月</td><td class="p-2">3月</td><td class="p-2">4月</td><td class="p-2">...</td><td class="p-2">全年</td>
+                </tr>
+                <tr class="h-12 border-b hover:bg-yellow-50">
+                    <td class="p-2 font-bold">陈力文</td>
+                    <td class="p-2">10.4</td><td class="p-2 bg-yellow-100 font-bold">12.0</td><td class="p-2 bg-yellow-100">12.0</td><td class="p-2">...</td><td class="p-2 font-bold">142.4</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

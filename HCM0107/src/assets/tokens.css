@@ -54,3 +54,38 @@
   --z-index-dropdown: 1050;
   --z-index-tooltip: 1060;
 }
+
+/* =====================================================
+   Figma Design System Tokens (from figma.css)
+   \u5168\u5c40\u5f15\u5165\u786e\u4fdd\u6240\u6709\u7ec4\u4ef6\u53ef\u4ee5\u4f7f\u7528\u8fd9\u4e9b\u53d8\u91cf
+   ===================================================== */
+:root {
+  /* \u4e3b\u8272 Primary */
+  --primary-color: #0860BD;
+  --primary-hover: #064B9A;
+  --primary-active: #043875;
+
+  /* \u80cc\u666f\u8272 Backgrounds */
+  --bg-page: #F5F5F5;
+  --bg-container: #FFFFFF;
+  --bg-header-gray: #FAFBFC;
+  --bg-header-blue: #E8F3FF;
+  --bg-header-yellow: #FFFBED;
+  --bg-hover-row: #F2F3F5;
+
+  /* \u6587\u5b57\u8272 Text */
+  --text-primary: #12171F;
+  --text-secondary: #5C636F;
+  --text-tertiary: #8C93A0;
+  --text-inverse: #FFFFFF;
+
+  /* \u72b6\u6001\u8272 Status */
+  --status-success: #008A00;
+  --status-error: #E70000;
+  --status-warning: #A95823;
+  --status-pending: #898A8C;
+
+  /* \u8fb9\u6846 Border */
+  --border-color: #E5E9F0;
+  --border-light: #F2F3F5;
+}

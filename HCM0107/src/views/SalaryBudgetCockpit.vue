@@ -25,33 +25,39 @@
         row-key="id"
         class="pending-table"
       >
-        <a-table-column title="申请类型" data-index="type" :width="100" :customCell="rowSpanType">
+        <a-table-column title="申请类型" data-index="type" :width="100" :customCell="rowSpanType" :customHeaderCell="() => ({ class: 'black-text-header' })">
           <template #default="{ text }">
             <span class="text-bold" :title="text">{{ text }}</span>
           </template>
         </a-table-column>
-        <a-table-column title="申请部门" data-index="dept" :width="120">
+        <a-table-column title="申请部门" data-index="dept" :width="120" :customHeaderCell="() => ({ class: 'black-text-header' })">
           <template #default="{ text }">
             <span class="text-bold" :title="text">{{ text }}</span>
           </template>
         </a-table-column>
         
-        <a-table-column-group title="HC">
+        <a-table-column-group title="HC" :customHeaderCell="() => ({ class: 'black-text-header' })">
           <a-table-column-group title="申请前">
-            <a-table-column title="正编" data-index="hc_pre_reg" align="right" />
-            <a-table-column title="其他人员" data-index="hc_pre_other" align="right" />
+            <a-table-column title="正编" data-index="hc_pre_reg" align="right" :width="90" />
+            <a-table-column title="其他人员" data-index="hc_pre_other" align="right" :width="90" />
           </a-table-column-group>
-          <a-table-column-group title="申请通过后">
-            <a-table-column title="正编" data-index="hc_post_reg" align="right" />
-            <a-table-column title="其他人员" data-index="hc_post_other" align="right" />
+          <!-- 申请通过后：使用 customHeaderCell + customCell 确保 class 传递到 th/td -->
+          <a-table-column-group title="申请通过后"
+            :customHeaderCell="() => ({ class: 'post-approval-group-header' })">
+            <a-table-column title="正编" data-index="hc_post_reg" align="right" :width="90"
+              :customHeaderCell="() => ({ class: 'post-approval-col' })"
+              :customCell="() => ({ class: 'post-approval-col' })" />
+            <a-table-column title="其他人员" data-index="hc_post_other" align="right" :width="90"
+              :customHeaderCell="() => ({ class: 'post-approval-col' })"
+              :customCell="() => ({ class: 'post-approval-col' })" />
           </a-table-column-group>
           <a-table-column-group title="变化">
-            <a-table-column title="正编" align="right">
+            <a-table-column title="正编" align="right" :width="90">
               <template #default="{ record }">
                 <span :class="getTextColor(record.hc_diff_reg)">{{ record.hc_diff_reg > 0 ? '+' : '' }}{{ record.hc_diff_reg }}</span>
               </template>
             </a-table-column>
-            <a-table-column title="其他人员" align="right">
+            <a-table-column title="其他人员" align="right" :width="90">
               <template #default="{ record }">
                 <span :class="getTextColor(record.hc_diff_other)">{{ record.hc_diff_other > 0 ? '+' : '' }}{{ record.hc_diff_other }}</span>
               </template>
@@ -59,27 +65,31 @@
           </a-table-column-group>
         </a-table-column-group>
 
-        <a-table-column-group title="月度工薪预算 (万)">
-          <a-table-column title="申请前" data-index="month_pre" align="right" />
-          <a-table-column title="申请通过后" data-index="month_post" align="right" />
-          <a-table-column title="变化" data-index="month_diff" align="right">
+        <a-table-column-group title="月度工薪预算 (万)" :customHeaderCell="() => ({ class: 'black-text-header' })">
+          <a-table-column title="申请前" data-index="month_pre" align="right" :width="120" />
+          <a-table-column title="申请通过后" data-index="month_post" align="right" :width="120"
+            :customHeaderCell="() => ({ class: 'post-approval-col' })"
+            :customCell="() => ({ class: 'post-approval-col' })" />
+          <a-table-column title="变化" data-index="month_diff" align="right" :width="120">
             <template #default="{ text }">
               <span :class="getTextColor(text)">{{ text > 0 ? '+' : '' }}{{ text }}</span>
             </template>
           </a-table-column>
         </a-table-column-group>
 
-        <a-table-column-group title="年度工薪预算 (万)">
-          <a-table-column title="申请前" data-index="year_pre" align="right" />
-          <a-table-column title="申请通过后" data-index="year_post" align="right" />
-          <a-table-column title="变化" data-index="year_diff" align="right">
+        <a-table-column-group title="年度工薪预算 (万)" :customHeaderCell="() => ({ class: 'black-text-header' })">
+          <a-table-column title="申请前" data-index="year_pre" align="right" :width="120" />
+          <a-table-column title="申请通过后" data-index="year_post" align="right" :width="120"
+            :customHeaderCell="() => ({ class: 'post-approval-col' })"
+            :customCell="() => ({ class: 'post-approval-col' })" />
+          <a-table-column title="变化" data-index="year_diff" align="right" :width="120">
             <template #default="{ text }">
               <span :class="getTextColor(text)">{{ text > 0 ? '+' : '' }}{{ text }}</span>
             </template>
           </a-table-column>
         </a-table-column-group>
 
-        <a-table-column title="操作" :width="100" align="center" :customCell="rowSpanAction">
+        <a-table-column title="操作" :width="100" align="center" :customCell="rowSpanAction" :customHeaderCell="() => ({ class: 'black-text-header' })">
           <template #default="{ record }">
             <div v-if="record.actions" class="action-col">
               <a-button type="link" size="small" v-if="record.actions.includes('submit')">去提交</a-button>
@@ -101,7 +111,7 @@
           <a-button type="text" size="small" @click="handleExpandAll">一键展开</a-button>
         </a-space>
       </div>
-      
+
       <a-table
         :data-source="store.treeData"
         :pagination="false"
@@ -110,69 +120,66 @@
         :scroll="{ x: 'max-content' }"
         :rowClassName="getRowClassName"
         row-key="id"
-        class="budget-tree-table"
+        class="budget-tree-table style-plan1-enhanced"
         :expandIconColumnIndex="0"
         :expandedRowKeys="expandedKeys"
         @expand="onExpand"
       >
-        <a-table-column title="部门" data-index="name" :width="200" fixed="left" />
-        <a-table-column-group title="2026年" class="header-bg-gray">
-          <a-table-column title="预算调整" :width="60" align="center" class="bg-gray-light">
+        <a-table-column title="部门" data-index="name" :width="200" fixed="left" :customHeaderCell="() => ({ class: 'black-text-header' })" />
+        <a-table-column-group title="2026年" class="year-header year-header-2026">
+          <a-table-column title="预算调整" :width="80" align="center" class="dimension-header separator-type fixed-column-bg" :customHeaderCell="() => ({ class: 'black-text-header' })">
             <template #default="{ record }">
-              <a-button type="text" size="small" @click="goToBudgetAdjustment(record)"><template #icon><edit-outlined /></template></a-button>
+              <a-button type="link" size="small" @click="goToBudgetAdjustment(record)" class="action-link-btn">调整</a-button>
             </template>
           </a-table-column>
-          <a-table-column-group title="HC" class="bg-gray-light">
-            <a-table-column-group title="当前" class="bg-gray-light">
-              <a-table-column title="正编" :width="90" align="right" class="bg-gray-light"><template #default="{record}">{{ formatCount(record.values.h26_cur[0]) }}</template></a-table-column>
-              <a-table-column title="实习" :width="90" align="right" class="bg-gray-light"><template #default="{record}">{{ formatCount(record.values.h26_cur[1]) }}</template></a-table-column>
-              <a-table-column title="劳务派遣" :width="90" align="right" class="bg-gray-light"><template #default="{record}">{{ formatCount(record.values.h26_cur[2]) }}</template></a-table-column>
-              <a-table-column title="人力外包" :width="90" align="right" class="bg-gray-light"><template #default="{record}">{{ formatCount(record.values.h26_cur[3]) }}</template></a-table-column>
-              <a-table-column title="兼职" :width="90" align="right" class="bg-gray-light"><template #default="{record}">{{ formatCount(record.values.h26_cur[4]) }}</template></a-table-column>
+          <a-table-column title="预实比对" :width="100" align="center" class="dimension-header separator-type fixed-column-bg" :customHeaderCell="() => ({ class: 'black-text-header' })">
+            <template #default="{record}">
+              <a-button type="link" size="small" @click="openModal(record)" class="action-link-btn">预实比对</a-button>
+            </template>
+          </a-table-column>
+          <a-table-column-group title="HC" class="module-header separator-module hc-header">
+            <a-table-column-group title="当前" class="dimension-header separator-dimension current-header">
+              <a-table-column title="正编" :width="90" align="right" class="employee-type-header separator-type border-dashed" data-icon="👤"><template #default="{record}"><span class="data-secondary">{{ formatCount(record.values.h26_cur[0]) }}</span></template></a-table-column>
+              <a-table-column title="实习" :width="90" align="right" class="employee-type-header separator-type border-dashed" data-icon="🎓"><template #default="{record}"><span class="data-secondary">{{ formatCount(record.values.h26_cur[1]) }}</span></template></a-table-column>
+              <a-table-column title="劳务派遣" :width="90" align="right" class="employee-type-header separator-type border-dashed" data-icon="🔄"><template #default="{record}"><span class="data-secondary">{{ formatCount(record.values.h26_cur[2]) }}</span></template></a-table-column>
+              <a-table-column title="人力外包" :width="90" align="right" class="employee-type-header separator-type" data-icon="📦"><template #default="{record}"><span class="data-secondary">{{ formatCount(record.values.h26_cur[3]) }}</span></template></a-table-column>
+              <a-table-column title="兼职" :width="90" align="right" class="employee-type-header" data-icon="⏱️" v-if="false"><template #default="{record}"><span class="data-secondary">{{ formatCount(record.values.h26_cur[4]) }}</span></template></a-table-column>
             </a-table-column-group>
-            <a-table-column-group title="年末目标" class="bg-gray-light">
-              <a-table-column title="正编" :width="90" align="right" class="bg-gray-light"><template #default="{record}">{{ formatCount(record.values.h26_tgt[0]) }}</template></a-table-column>
-              <a-table-column title="实习" :width="90" align="right" class="bg-gray-light"><template #default="{record}">{{ formatCount(record.values.h26_tgt[1]) }}</template></a-table-column>
-              <a-table-column title="劳务派遣" :width="90" align="right" class="bg-gray-light"><template #default="{record}">{{ formatCount(record.values.h26_tgt[2]) }}</template></a-table-column>
-              <a-table-column title="人力外包" :width="90" align="right" class="bg-gray-light"><template #default="{record}">{{ formatCount(record.values.h26_tgt[3]) }}</template></a-table-column>
-              <a-table-column title="兼职" :width="90" align="right" class="bg-gray-light"><template #default="{record}">{{ formatCount(record.values.h26_tgt[4]) }}</template></a-table-column>
+            <a-table-column-group title="年末目标" class="dimension-header target-text">
+              <a-table-column title="正编" :width="90" align="right" class="employee-type-header separator-type target-text border-dashed" :customCell="() => ({ class: 'target-col-bg' })" data-icon="👤"><template #default="{record}"><span class="target-text font-bold">{{ formatCount(record.values.h26_tgt[0]) }}</span></template></a-table-column>
+              <a-table-column title="实习" :width="90" align="right" class="employee-type-header separator-type target-text border-dashed" :customCell="() => ({ class: 'target-col-bg' })" data-icon="🎓"><template #default="{record}"><span class="target-text font-bold">{{ formatCount(record.values.h26_tgt[1]) }}</span></template></a-table-column>
+              <a-table-column title="劳务派遣" :width="90" align="right" class="employee-type-header separator-type target-text border-dashed" :customCell="() => ({ class: 'target-col-bg' })" data-icon="🔄"><template #default="{record}"><span class="target-text font-bold">{{ formatCount(record.values.h26_tgt[2]) }}</span></template></a-table-column>
+              <a-table-column title="人力外包" :width="90" align="right" class="employee-type-header separator-type target-text" :customCell="() => ({ class: 'target-col-bg' })" data-icon="📦"><template #default="{record}"><span class="target-text font-bold">{{ formatCount(record.values.h26_tgt[3]) }}</span></template></a-table-column>
+              <a-table-column title="兼职" :width="90" align="right" class="employee-type-header target-text" :customCell="() => ({ class: 'target-col-bg' })" data-icon="⏱️" v-if="false"><template #default="{record}"><strong class="target-text font-bold">{{ formatCount(record.values.h26_tgt[4]) }}</strong></template></a-table-column>
             </a-table-column-group>
           </a-table-column-group>
-          <a-table-column-group title="工薪成本 (万)" class="bg-gray-light">
-            <a-table-column title="累计已发生" :width="120" align="right" class="bg-gray-light"><template #default="{record}"><strong>{{ formatMoney(record.values.cost_acc) }}</strong></template></a-table-column>
-            <a-table-column title="全年预算" :width="120" align="right" class="bg-gray-light"><template #default="{record}"><strong>{{ formatMoney(record.values.cost_year) }}</strong></template></a-table-column>
-            <a-table-column title="预实比对" :width="100" align="center" class="bg-gray-light">
-              <template #default="{record}">
-        <a @click="openModal(record)">预实比对</a>
-      </template>
-            </a-table-column>
+          <a-table-column-group title="工薪成本 (万)" class="module-header cost-header">
+            <a-table-column title="累计已发生" :width="120" align="right" class="dimension-header separator-type cost-header-sub"><template #default="{record}"><span class="data-secondary">{{ formatMoney(record.values.cost_acc) }}</span></template></a-table-column>
+            <a-table-column title="全年预算" :width="120" align="right" class="dimension-header cost-header-sub" :customHeaderCell="() => ({ class: 'year-budget-col' })"><template #default="{record}"><strong style="color: var(--status-warning)">{{ formatMoney(record.values.cost_year) }}</strong></template></a-table-column>
           </a-table-column-group>
         </a-table-column-group>
 
-        <a-table-column-group title="2027年" class="header-bg-blue">
-          <a-table-column title="预算编制" :width="80" align="center" class="bg-blue-light">
-             <template #default>
-               <a-button type="text" size="small"><template #icon><file-text-outlined /></template></a-button>
-             </template>
-          </a-table-column>
-          <a-table-column-group title="HC" class="bg-blue-light">
-            <a-table-column-group title="年初计划" class="bg-blue-light">
-              <a-table-column title="正编" :width="90" align="right" class="bg-blue-light"><template #default="{record}">{{ formatCount(record.values.h27_plan[0]) }}</template></a-table-column>
-              <a-table-column title="实习" :width="90" align="right" class="bg-blue-light"><template #default="{record}">{{ formatCount(record.values.h27_plan[1]) }}</template></a-table-column>
-              <a-table-column title="劳务派遣" :width="90" align="right" class="bg-blue-light"><template #default="{record}">{{ formatCount(record.values.h27_plan[2]) }}</template></a-table-column>
-              <a-table-column title="人力外包" :width="90" align="right" class="bg-blue-light"><template #default="{record}">{{ formatCount(record.values.h27_plan[3]) }}</template></a-table-column>
-              <a-table-column title="兼职" :width="90" align="right" class="bg-blue-light"><template #default="{record}">{{ formatCount(record.values.h27_plan[4]) }}</template></a-table-column>
+        <a-table-column title="" :width="16" align="center" :customHeaderCell="() => ({ class: 'spacer-col' })" :customCell="() => ({ class: 'spacer-col' })" />
+
+        <a-table-column-group title="2027年" class="year-header year-header-2027">
+          <a-table-column-group title="HC" class="module-header separator-module hc-header">
+            <a-table-column-group title="年初计划" class="dimension-header separator-dimension current-header">
+              <a-table-column title="正编" :width="90" align="right" class="employee-type-header separator-type border-dashed" data-icon="👤"><template #default="{record}"><span class="data-secondary">{{ formatCount(record.values.h27_plan[0]) }}</span></template></a-table-column>
+              <a-table-column title="实习" :width="90" align="right" class="employee-type-header separator-type border-dashed" data-icon="🎓"><template #default="{record}"><span class="data-secondary">{{ formatCount(record.values.h27_plan[1]) }}</span></template></a-table-column>
+              <a-table-column title="劳务派遣" :width="90" align="right" class="employee-type-header separator-type border-dashed" data-icon="🔄"><template #default="{record}"><span class="data-secondary">{{ formatCount(record.values.h27_plan[2]) }}</span></template></a-table-column>
+              <a-table-column title="人力外包" :width="90" align="right" class="employee-type-header separator-type" data-icon="📦"><template #default="{record}"><span class="data-secondary">{{ formatCount(record.values.h27_plan[3]) }}</span></template></a-table-column>
+              <a-table-column title="兼职" :width="90" align="right" class="employee-type-header" data-icon="⏱️" v-if="false"><template #default="{record}"><span class="data-secondary">{{ formatCount(record.values.h27_plan[4]) }}</span></template></a-table-column>
             </a-table-column-group>
-            <a-table-column-group title="年末目标" class="bg-blue-light">
-              <a-table-column title="正编" :width="90" align="right" class="bg-blue-light"><template #default="{record}">{{ formatCount(record.values.h27_plan[0]) }}</template></a-table-column>
-              <a-table-column title="实习" :width="90" align="right" class="bg-blue-light"><template #default="{record}">{{ formatCount(record.values.h27_plan[1]) }}</template></a-table-column>
-              <a-table-column title="劳务派遣" :width="90" align="right" class="bg-blue-light"><template #default="{record}">{{ formatCount(record.values.h27_plan[2]) }}</template></a-table-column>
-              <a-table-column title="人力外包" :width="90" align="right" class="bg-blue-light"><template #default="{record}">{{ formatCount(record.values.h27_plan[3]) }}</template></a-table-column>
-              <a-table-column title="兼职" :width="90" align="right" class="bg-blue-light"><template #default="{record}">{{ formatCount(record.values.h27_plan[4]) }}</template></a-table-column>
+            <a-table-column-group title="年末目标" class="dimension-header target-text">
+              <a-table-column title="正编" :width="90" align="right" class="employee-type-header separator-type target-text border-dashed" :customCell="() => ({ class: 'target-col-bg' })" data-icon="👤"><template #default="{record}"><strong class="target-text font-bold">{{ formatCount(record.values.h27_plan[0]) }}</strong></template></a-table-column>
+              <a-table-column title="实习" :width="90" align="right" class="employee-type-header separator-type target-text border-dashed" :customCell="() => ({ class: 'target-col-bg' })" data-icon="🎓"><template #default="{record}"><strong class="target-text font-bold">{{ formatCount(record.values.h27_plan[1]) }}</strong></template></a-table-column>
+              <a-table-column title="劳务派遣" :width="90" align="right" class="employee-type-header separator-type target-text border-dashed" :customCell="() => ({ class: 'target-col-bg' })" data-icon="🔄"><template #default="{record}"><strong class="target-text font-bold">{{ formatCount(record.values.h27_plan[2]) }}</strong></template></a-table-column>
+              <a-table-column title="人力外包" :width="90" align="right" class="employee-type-header separator-type target-text" :customCell="() => ({ class: 'target-col-bg' })" data-icon="📦"><template #default="{record}"><strong class="target-text font-bold">{{ formatCount(record.values.h27_plan[3]) }}</strong></template></a-table-column>
+              <a-table-column title="兼职" :width="90" align="right" class="employee-type-header target-text" :customCell="() => ({ class: 'target-col-bg' })" data-icon="⏱️" v-if="false"><template #default="{record}"><strong class="target-text font-bold">{{ formatCount(record.values.h27_plan[4]) }}</strong></template></a-table-column>
             </a-table-column-group>
           </a-table-column-group>
-          <a-table-column-group title="工薪成本 (万)" class="bg-blue-light">
-            <a-table-column title="全年预算" :width="120" align="right" class="bg-blue-light"><template #default="{record}"><strong>{{ formatMoney(record.values.cost_year * 1.05) }}</strong></template></a-table-column>
+          <a-table-column-group title="工薪成本 (万)" class="module-header cost-header">
+            <a-table-column title="全年预算" :width="120" align="right" class="dimension-header cost-header-sub" :customHeaderCell="() => ({ class: 'year-budget-col' })"><template #default="{record}"><strong style="color: var(--status-warning)">{{ formatMoney(record.values.cost_year * 1.05) }}</strong></template></a-table-column>
           </a-table-column-group>
         </a-table-column-group>
       </a-table>
@@ -238,15 +245,16 @@
                   <question-circle-outlined style="color: #86909C; margin-left: 4px; cursor: help;" />
                 </a-tooltip>
               </span>
-              <a-radio-group v-model:value="modalViewType" button-style="solid" @change="handleViewTypeChange">
+              <a-radio-group v-model:value="modalViewType" button-style="solid" @change="handleViewTypeChange" style="white-space: nowrap; flex-shrink: 0;">
                 <a-radio-button value="hc">HC预算</a-radio-button>
                 <a-radio-button value="salary">工资预算</a-radio-button>
                 <a-radio-button value="total">工薪预算</a-radio-button>
+                <a-radio-button value="department">部门级预算</a-radio-button>
               </a-radio-group>
             </div>
           </div>
-          <div>
-            <a-button class="btn-white-custom">预算变更记录</a-button>
+          <div style="white-space: nowrap; flex-shrink: 0; display: flex; align-items: center; gap: 8px;">
+            <a-button class="btn-white-custom" @click="logVisible = true">预算变更记录</a-button>
             <a-button type="text" @click="modalVisible = false"><close-outlined /></a-button>
           </div>
         </div>
@@ -267,6 +275,19 @@
                <template v-if="column.dataIndex === 'group'">
                  <div class="vertical-text">{{ text }}</div>
                </template>
+               <template v-else-if="column.dataIndex === 'label'">
+                 {{ text }}
+                 <a-tooltip v-if="text === '剩余HC数' || text === '剩余金额(万)'" placement="right" overlayClassName="custom-tooltip">
+                   <template #title>
+                     <div class="tooltip-content">
+                       <div class="tooltip-item">
+                         {{ text === '剩余HC数' ? '取当月与12月剩余HC的较小值' : '取当月与12月剩余金额的较小值' }}
+                       </div>
+                     </div>
+                   </template>
+                   <question-circle-outlined style="color: #86909C; margin-left: 4px; cursor: help;" />
+                 </a-tooltip>
+               </template>
                <template v-else-if="months.includes(column.dataIndex as string)">
                  <template v-if="shouldShowDash(column.dataIndex as string, record)">
                    -
@@ -278,16 +299,42 @@
                <template v-else-if="column.dataIndex === 'total'">
                  <strong>{{ text }}</strong>
                </template>
+               <template v-else-if="['severance', 'overtime', 'signon'].includes(column.dataIndex as string)">
+                 <template v-if="record.label === '已用金额(万)' && text !== '-'">
+                   <a-popover placement="left" trigger="click" overlayClassName="custom-tooltip">
+                     <template #title>
+                       <div class="tooltip-title" style="font-size: 13px; font-weight: 600; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px;">
+                         {{ column.title }} - 每月明细
+                       </div>
+                     </template>
+                     <template #content>
+                       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; font-size: 12px; color: var(--text-primary); min-width: 200px;">
+                         <div v-for="(m, i) in months" :key="m" style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">
+                           <span style="color: var(--text-secondary)">{{ m }}</span>
+                           <span style="font-weight: 500;">{{ getMockMonthBreakdown(record, column.dataIndex as string, i) }}</span>
+                         </div>
+                       </div>
+                     </template>
+                     <a style="font-weight: 600; color: var(--primary-color); cursor: pointer; border-bottom: 1px dashed var(--primary-color); padding-bottom: 1px;">{{ text }}</a>
+                   </a-popover>
+                 </template>
+                 <template v-else>
+                   <strong>{{ text }}</strong>
+                 </template>
+               </template>
              </template>
           </a-table>
         </div>
       </div>
     </a-modal>
+
+    <!-- Budget Change Log Modal -->
+    <BudgetChangeLogModal v-model:open="logVisible" />
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+<script setup lang="tsx">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSalaryBudgetStore } from '../stores/salaryBudget'
 import {
@@ -298,6 +345,8 @@ import {
   QuestionCircleOutlined,
   CloseOutlined
 } from '@ant-design/icons-vue'
+import BudgetChangeLogModal from '../components/budget/BudgetChangeLogModal.vue'
+import DepartmentCard from '../components/budget/DepartmentCard.vue'
 
 const store = useSalaryBudgetStore()
 const router = useRouter()
@@ -403,8 +452,54 @@ const handleCollapseAll = () => {
   expandedKeys.value = []
 }
 
+// Dynamic freeze logic for 2026 columns
+const is2026Visible = ref(true)
+
+const check2026Visibility = () => {
+  const container = document.querySelector('.budget-tree-table .ant-table-body') || 
+                    document.querySelector('.budget-tree-table .ant-table-content');
+  if (!container) return;
+
+  const year2026Header = document.querySelector('.year-header-2026') as HTMLElement;
+  const year2027Header = document.querySelector('.year-header-2027') as HTMLElement;
+  
+  if (year2026Header && year2027Header) {
+    // 2026年表头右边界相对于容器左侧的距离
+    // 如果2026年的右侧已经被滚动出视口（被左侧固定列遮挡），则取消冻结
+    const containerRect = container.getBoundingClientRect();
+    const year2026Rect = year2026Header.getBoundingClientRect();
+    
+    // 假设左侧固定列（部门）宽度约200px
+    const leftFixedOffset = 200; 
+    
+    // 如果2026年表头的右边缘滚动到了部门列的左侧，说明2026年区域已经不可见
+    if (year2026Rect.right <= containerRect.left + leftFixedOffset) {
+      is2026Visible.value = false;
+    } else {
+      is2026Visible.value = true;
+    }
+  }
+}
+
 onMounted(() => {
   handleExpandAll()
+  
+  // Listen to table scroll to update fixed columns
+  setTimeout(() => {
+    const tableBody = document.querySelector('.budget-tree-table .ant-table-body') || 
+                      document.querySelector('.budget-tree-table .ant-table-content');
+    if (tableBody) {
+      tableBody.addEventListener('scroll', check2026Visibility);
+    }
+  }, 500)
+})
+
+onUnmounted(() => {
+  const tableBody = document.querySelector('.budget-tree-table .ant-table-body') || 
+                    document.querySelector('.budget-tree-table .ant-table-content');
+  if (tableBody) {
+    tableBody.removeEventListener('scroll', check2026Visibility);
+  }
 })
 
 const onExpand = (expanded: boolean, record: any) => {
@@ -416,14 +511,192 @@ const onExpand = (expanded: boolean, record: any) => {
   }
 }
 
+// --- Visual Optimization Logic ---
+const currentStyle = ref<'original' | 'plan1' | 'plan2' | 'plan3'>('original')
+
+const handleStyleChange = (style: 'original' | 'plan1' | 'plan2' | 'plan3') => {
+  currentStyle.value = style
+}
+
+// Plan 2 & 3 Data Computation
+const computeSummary = (nodes: any[]): any[] => {
+  return nodes.map(dept => {
+    const hc26Cur = dept.values.h26_cur.reduce((a: number, b: number) => a + b, 0)
+    const hc26Tgt = dept.values.h26_tgt.reduce((a: number, b: number) => a + b, 0)
+    const hc27Plan = dept.values.h27_plan.reduce((a: number, b: number) => a + b, 0)
+
+    const cost26Used = dept.values.cost_acc
+    const cost26Total = dept.values.cost_year
+    const cost27Total = dept.values.cost_year * 1.05
+
+    let cost26Usage = 0
+    if (cost26Total > 0) {
+      cost26Usage = cost26Used / cost26Total
+    }
+
+    let status = 'normal'
+    if (cost26Usage > 1.1) status = 'risk'
+    else if (cost26Usage > 1.05) status = 'warning'
+
+    const result: any = {
+      ...dept,
+      summary: {
+        hc26Cur,
+        hc26Tgt,
+        hc27Plan,
+        cost26Used,
+        cost26Total,
+        cost27Total,
+        status,
+        cost26Usage
+      }
+    }
+
+    if (dept.children && dept.children.length > 0) {
+      result.children = computeSummary(dept.children)
+    }
+
+    return result
+  })
+}
+
+const summaryData = computed(() => {
+  return computeSummary(store.treeData || [])
+})
+
+// Plan 3 flattened cards data
+const flattenedTreeData = computed(() => {
+  const result: any[] = []
+  const flatten = (nodes: any[], prefix = '') => {
+    nodes.forEach(n => {
+      result.push({ ...n, displayName: prefix ? `${prefix} > ${n.name}` : n.name })
+      if (n.children && n.children.length) {
+        flatten(n.children, prefix ? `${prefix} > ${n.name}` : n.name)
+      }
+    })
+  }
+  flatten(store.treeData || [])
+  return result
+})
+
+const getStatusColor = (status: string) => {
+  if (status === 'risk') return 'error'
+  if (status === 'warning') return 'warning'
+  return 'success'
+}
+
+const getStatusText = (status: string) => {
+  if (status === 'risk') return '风险'
+  if (status === 'warning') return '预警'
+  return '正常'
+}
+
+// Plan 2 progressive disclosure logic
+const expandedKeys2 = ref<string[]>([])
+const expandedModules = ref<Record<string, string>>({})
+
+const toggleRow2 = (expanded: boolean, record: any) => {
+  if (expanded) {
+    expandedKeys2.value = [...expandedKeys2.value, record.id]
+  } else {
+    expandedKeys2.value = expandedKeys2.value.filter(k => k !== record.id)
+  }
+}
+
+const toggleModule = (rowId: string, module: string) => {
+  const key = `${rowId}-${module}`
+  if (expandedModules.value[key] === module) {
+    delete expandedModules.value[key]
+  } else {
+    expandedModules.value[key] = module
+  }
+}
+
+const getHCDetailData = (record: any) => {
+  const employeeTypes = [
+    { name: '正编', index: 0 },
+    { name: '实习', index: 1 },
+    { name: '劳务派遣', index: 2 },
+    { name: '人力外包', index: 3 },
+    { name: '兼职', index: 4 }
+  ]
+
+  return employeeTypes.map(type => ({
+    type: type.name,
+    current: record.values.h26_cur[type.index],
+    target: record.values.h26_tgt[type.index],
+    diff: record.values.h26_cur[type.index] ? ((record.values.h26_tgt[type.index] - record.values.h26_cur[type.index]) / record.values.h26_cur[type.index] * 100).toFixed(1) : (record.values.h26_tgt[type.index] > 0 ? '100.0' : '0.0')
+  }))
+}
+
+const getDiffColor = (val: string) => {
+  if (parseFloat(val) === 0) return 'text-none'
+  return parseFloat(val) > 0 ? 'text-up' : 'text-down'
+}
+
+const formatMoneyStr = (val: number) => val?.toLocaleString('zh-CN', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || '0.0'
+
+const expandedRowRender2 = (record: any) => {
+  return (
+    <div class="expanded-content">
+      <div class="expandable-module">
+        <div class="module-header" onClick={() => toggleModule(record.id, 'hc')}>
+          <span>HC详情</span>
+          <span>{expandedModules.value[`${record.id}-hc`] === 'hc' ? '🔼' : '🔽'}</span>
+        </div>
+        <div v-show={expandedModules.value[`${record.id}-hc`] === 'hc'} class="module-content">
+          <a-table dataSource={getHCDetailData(record)} pagination={false} size="small" showHeader={true}>
+            <a-table-column title="类型" dataIndex="type" width={80} />
+            <a-table-column title="当前" dataIndex="current" align="right" />
+            <a-table-column title="目标" dataIndex="target" align="right" />
+            <a-table-column title="变化" dataIndex="diff" align="right" v-slots={{
+              default: ({ text }: any) => {
+                const s = parseFloat(text) > 0 ? '+' : '';
+                return <span class={getDiffColor(text)}>{s}{text}%</span>
+              }
+            }} />
+          </a-table>
+        </div>
+      </div>
+      <div class="expandable-module">
+        <div class="module-header" onClick={() => toggleModule(record.id, 'cost')}>
+          <span>成本详情</span>
+          <span>{expandedModules.value[`${record.id}-cost`] === 'cost' ? '🔼' : '🔽'}</span>
+        </div>
+        <div v-show={expandedModules.value[`${record.id}-cost`] === 'cost'} class="module-content">
+          <div class="cost-detail">
+            <div class="cost-item">
+              <span class="cost-label">累计已发生</span>
+              <span class="cost-value">{formatMoneyStr(record.summary.cost26Used)}</span>
+            </div>
+            <div class="cost-item">
+              <span class="cost-label">全年预算</span>
+              <span class="cost-value">{formatMoneyStr(record.summary.cost26Total)}</span>
+            </div>
+            <div class="cost-item">
+              <span class="cost-label">使用率</span>
+              <a-progress percent={parseFloat((record.summary.cost26Usage * 100).toFixed(1))} status={getStatusColor(record.summary.status)} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // --- Modal Logic ---
 const modalVisible = ref(false)
+const logVisible = ref(false)
 const modalDeptName = ref('')
 // Consolidated View Type: 'salary' | 'total' | 'hc'
 const modalViewType = ref('hc')
 
 // Computed properties to map view type to old data types for logic compatibility
-const modalDataType = computed(() => modalViewType.value === 'hc' ? 'hc' : 'budget')
+const modalDataType = computed(() => {
+  if (modalViewType.value === 'hc') return 'hc'
+  if (modalViewType.value === 'department') return 'department'
+  return 'budget'
+})
 const modalBudgetType = computed(() => {
   if (modalViewType.value === 'salary') return 'salary'
   if (modalViewType.value === 'total') return 'total'
@@ -486,6 +759,76 @@ const generateModalData = () => {
 
   const result: any[] = []
   
+  if (modalDataType.value === 'department') {
+    const deptGroups = [
+      { name: '离职补偿金', type: 'severance' },
+      { name: '加班费', type: 'overtime' },
+      { name: '签约金', type: 'signon' }
+    ]
+    
+    const rowLabelsDept = [
+      { label: '年初预算金额(万)', key: 'init' },
+      { label: '当前预算金额(万)', key: 'curr' },
+      { label: '已用金额(万)', key: 'used' },
+      { label: '剩余金额(万)', key: 'remain' }
+    ]
+    
+    deptGroups.forEach(group => {
+      // Mock data for department level budget
+      const initVal = Math.round(Math.random() * 20 + 5)
+      const currVal = Math.round(initVal * (1 + (Math.random() * 0.4 - 0.2)))
+      const usedVal = Math.round(currVal * Math.random())
+      const remainVal = currVal - usedVal
+      
+      const dataMap: any = { 'init': initVal, 'curr': currVal, 'used': usedVal, 'remain': remainVal }
+      
+      rowLabelsDept.forEach((row, idx) => {
+        const item: any = {
+          key: `${group.type}-${row.key}`,
+          group: group.name,
+          label: row.label,
+          rowSpan: idx === 0 ? 4 : 0,
+          total: dataMap[row.key].toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+        }
+        
+        // 增加 1-12 月数据逻辑
+        for (let i = 0; i < 12; i++) {
+          let monthValue = '-'
+          
+          if (group.type === 'severance') {
+            // 离职补偿金：只有已用金额，其他都是-
+            if (row.key === 'used') {
+              monthValue = (usedVal / 12 * (Math.random() * 0.4 + 0.8)).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+            }
+          } else if (group.type === 'overtime') {
+            // 加班费：只有已用金额，其他都是-
+            if (row.key === 'used') {
+              monthValue = (usedVal / 12 * (Math.random() * 0.4 + 0.8)).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+            }
+          } else if (group.type === 'signon') {
+            // 签约金：有当前预算金额和已用金额，其他都是-
+            if (row.key === 'curr') {
+              monthValue = (currVal / 12).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+            } else if (row.key === 'used') {
+              monthValue = (usedVal / 12 * (Math.random() * 0.4 + 0.8)).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+            }
+          }
+          
+          item[months[i]] = monthValue
+        }
+        
+        if (idx === rowLabelsDept.length - 1) {
+          item.isLastInGroup = true
+        }
+        
+        result.push(item)
+      })
+    })
+    
+    modalData.value = result
+    return
+  }
+
   // Requirement 2: 在表格中明确标注每类人员的计算规则 (Add a helper or info logic, here we can assume the UI shows it via tooltip or we can add a description row? 
   // User says "在表格中明确标注". Maybe add a description text above table or tooltip on row label?
   // Let's stick to the "Total Salary" vs "Salary" toggle logic which implies the rule.)
@@ -660,6 +1003,11 @@ const generateModalData = () => {
 
       const dataMap: any = { 'init': initDataFinal, 'curr': currData, 'used': usedDataFinal, 'remain': remainData };
 
+      // Requirement: Add Severance, Overtime, Signon for 'total' budget and 'reg' group
+      let severanceVal = '-'
+      let overtimeVal = '-'
+      let signonVal = '-'
+      
       rowLabels.forEach((row, idx) => {
           const item: any = {
              key: `${group.type}-${row.key}`,
@@ -674,12 +1022,33 @@ const generateModalData = () => {
           
           if (isBudget) {
              const sum = dataMap[row.key].reduce((a: number, b: number) => a + b, 0)
-             item.total = sum.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+             let totalSum = sum
              
-             // 修正: 工薪预算模式下，剩余金额的全年合计显示为"-"
-             if (modalBudgetType.value === 'total' && row.key === 'remain') {
-               item.total = '-'
+             if (modalBudgetType.value === 'total' && group.type === 'reg') {
+                 // Mock values for department level items only for 'reg' group
+                 // Requirement: Signon used equals curr, remain equals 0
+                 const mockVals = {
+                     'init': [15.0, 8.0, 3.0],
+                     'curr': [15.0, 10.0, 3.0],
+                     'used': [5.2, 11.5, 3.0],
+                     'remain': [9.8, -1.5, 0.0]
+                 }
+                 severanceVal = mockVals[row.key as keyof typeof mockVals][0].toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+                 overtimeVal = mockVals[row.key as keyof typeof mockVals][1].toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+                 signonVal = mockVals[row.key as keyof typeof mockVals][2].toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+                 
+                 item.severance = severanceVal
+                 item.overtime = overtimeVal
+                 item.signon = signonVal
+                 
+                 totalSum += mockVals[row.key as keyof typeof mockVals].reduce((a, b) => a + b, 0)
+             } else if (modalBudgetType.value === 'total') {
+                 item.severance = '-'
+                 item.overtime = '-'
+                 item.signon = '-'
              }
+             
+             item.total = totalSum.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
           }
           
           // Mark last row of the group for visual separation
@@ -734,23 +1103,31 @@ const modalColumns = computed(() => {
     }
   ]
   
-  months.forEach((m, index) => {
-    const isCurrentMonth = index === new Date().getMonth()
-    cols.push({
-      title: m,
-      dataIndex: m,
-      align: 'right',
-      width: 80,
-      customCell: () => ({
-        class: isCurrentMonth ? 'current-month-cell' : ''
-      }),
-      customHeaderCell: () => ({
-        class: isCurrentMonth ? 'current-month-header' : ''
+  if (modalDataType.value !== 'department' || true) { // 强制显示1-12月列
+    months.forEach((m, index) => {
+      const isCurrentMonth = index === new Date().getMonth()
+      cols.push({
+        title: m,
+        dataIndex: m,
+        align: 'right',
+        width: 80,
+        customCell: () => ({
+          class: isCurrentMonth ? 'current-month-cell' : ''
+        }),
+        customHeaderCell: () => ({
+          class: isCurrentMonth ? 'current-month-header' : ''
+        })
       })
     })
-  })
+  }
   
-  if (modalDataType.value === 'budget') {
+  if (modalBudgetType.value === 'total' && modalDataType.value !== 'department') {
+    cols.push({ title: '离职补偿金', dataIndex: 'severance', align: 'right', width: 90 })
+    cols.push({ title: '加班费', dataIndex: 'overtime', align: 'right', width: 90 })
+    cols.push({ title: '签约金', dataIndex: 'signon', align: 'right', width: 90 })
+  }
+  
+  if (modalDataType.value === 'budget' || modalDataType.value === 'department') {
     cols.push({
       title: '2026全年',
       dataIndex: 'total',
@@ -780,6 +1157,18 @@ const formatNumber = (val: number | string) => {
   return val
 }
 
+const getMockMonthBreakdown = (record: any, dataIndex: string, monthIndex: number) => {
+  const valStr = typeof record[dataIndex] === 'string' ? record[dataIndex].replace(/,/g, '') : record[dataIndex];
+  const baseVal = parseFloat(valStr) || 0;
+  if (baseVal === 0) return '-';
+  
+  const weights = [0.08, 0.09, 0.11, 0.10, 0.12, 0.09, 0.08, 0.11, 0.10, 0.12, 0.09, 0.11];
+  const sumWeights = weights.reduce((a, b) => a + b, 0);
+  
+  const monthVal = (baseVal * weights[monthIndex] / sumWeights);
+  return monthVal.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
+
 const shouldShowDash = (month: string, record: any) => {
   // Logic:
   // 1. Must be 'total' Budget Type
@@ -801,6 +1190,8 @@ const shouldShowDash = (month: string, record: any) => {
 </script>
 
 <style scoped>
+@import '../../figma.css';
+
 /* --- Deep Overrides for Pixel Perfect Modal --- */
 
 /* Input Styles */
@@ -850,7 +1241,7 @@ const shouldShowDash = (month: string, record: any) => {
   color: #0052D9;
 }
 
-/* Modal Table Header Overrides */
+/* Modal Table Header Overrides - Figma Style */
 :deep(.modal-table .ant-table-thead > tr > th) {
   font-weight: 600;
   font-size: 13px;
@@ -1009,19 +1400,24 @@ const shouldShowDash = (month: string, record: any) => {
 }
 
 .text-bold {
-  font-weight: 600;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.text-primary {
+  color: var(--primary-color) !important;
 }
 
 .text-red {
-  color: #ff4d4f;
+  color: var(--status-error) !important;
 }
 
 .text-green {
-  color: #52c41a;
+  color: var(--status-success) !important;
 }
 
 .text-orange {
-  color: #fa8c16;
+  color: var(--status-pending) !important;
 }
 
 .text-small {
@@ -1108,16 +1504,21 @@ const shouldShowDash = (month: string, record: any) => {
   display: flex;
   gap: 24px;
   align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .filter-item {
   display: flex;
   align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .filter-label {
   margin-right: 8px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .c-input {
@@ -1186,26 +1587,65 @@ const shouldShowDash = (month: string, record: any) => {
   white-space: nowrap;
 }
 
-/* Compact Pending Table */
+/* Compact Pending Table - Figma Style */
 :deep(.pending-table) {
   width: 100%;
-  table-layout: fixed; /* Fix layout for ellipsis */
+  table-layout: fixed;
 }
 
 :deep(.pending-table .ant-table-thead > tr > th),
 :deep(.pending-table .ant-table-tbody > tr > td.ant-table-cell) {
-  padding: 4px 8px !important; /* Further reduced padding */
-  font-size: 12px;
-  line-height: 1.2;
+  padding: 7px 12px !important;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 13px !important;
+  line-height: 1.5;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* Figma 使用 box-shadow 模拟单侧线，不用 border */
+  box-shadow: inset 0px -1px 0px 0px var(--border-color), inset -1px 0px 0px 0px var(--border-color) !important;
+  border: none !important;
+  background-color: transparent;
 }
 
 :deep(.pending-table .ant-table-thead > tr > th) {
+  background-color: var(--bg-header-gray) !important;
+  padding: 8px 12px !important;
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+}
+
+:deep(.pending-table .ant-table-tbody > tr:hover > td) {
+  background-color: var(--bg-hover-row) !important;
+}
+
+:deep(.ant-btn-link) {
+  color: var(--primary-color) !important;
+}
+
+:deep(.ant-btn-link.ant-btn-dangerous) {
+  color: var(--status-error) !important;
+}
+
+/* ==== 申请通过后 列高亮 ==== */
+/* 分组表头与叶子列表头：使用默认灰色表头底色，文字依然使用品牌蓝 */
+:deep(.pending-table .ant-table-thead > tr > th.post-approval-group-header),
+:deep(.pending-table .ant-table-thead > tr > th.post-approval-col) {
+  color: var(--primary-color) !important;
+  background-color: var(--bg-header-gray) !important;
+}
+
+/* 数据单元格：浅蓝色背景 20%透明度 (rgba) */
+:deep(.pending-table .ant-table-tbody > tr > td.post-approval-col) {
+  color: var(--primary-color) !important;
+  background-color: rgba(232, 243, 255, 0.2) !important;
+}
+:deep(.pending-table .ant-table-tbody > tr:hover > td.post-approval-col) {
+  background-color: rgba(232, 243, 255, 0.4) !important;
 }
 
 /* Ensure tooltips or title attributes work by not overriding pointer events */
@@ -1213,34 +1653,317 @@ const shouldShowDash = (month: string, record: any) => {
   cursor: default;
 }
 
-/* Compact Budget Tree Table */
+/* Budget Tree Table — 对齐 Figma */
 :deep(.budget-tree-table .ant-table-thead > tr > th),
 :deep(.budget-tree-table .ant-table-tbody > tr > td.ant-table-cell) {
-  padding: 4px 6px !important; /* Even tighter padding horizontally */
-  font-size: 12px;
-  line-height: 1.2;
+  padding: 7px 12px !important;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 13px !important;
+  line-height: 1.5;
   white-space: nowrap;
+  box-shadow: inset -1px -1px 0px 0px var(--border-color) !important;
+  border: none !important;
 }
 
-/* Optimization for max-content scroll with tight spacing */
-:deep(.budget-tree-table) {
-  /* No fixed layout here as we rely on scroll x for many columns */
+:deep(.budget-tree-table .ant-table-thead > tr > th) {
+  background-color: var(--bg-header-gray) !important;
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+}
+
+/* 2026/2027年 修正覆盖问题及圆角 */
+:deep(.budget-tree-table .ant-table-thead > tr > th.year-header-2026) {
+  background-color: var(--primary-color) !important;
+  color: #FFFFFF !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  font-size: 18px !important;
+  border-top-right-radius: 8px !important;
+}
+:deep(.budget-tree-table .ant-table-thead > tr > th.year-header-2027) {
+  background-color: #DCE1EA !important;
+  color: #000000 !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  font-size: 14px !important;
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
+}
+
+/* 黑色表头文字 */
+:deep(.ant-table-thead > tr > th.black-text-header) {
+  color: #12171F !important;
+}
+
+/* 分割列表格间隔（模拟独立表格） */
+:deep(.budget-tree-table .ant-table-thead > tr > th.spacer-col),
+:deep(.budget-tree-table .ant-table-tbody > tr > td.spacer-col),
+:deep(.budget-tree-table .ant-table-tbody > tr:hover > td.spacer-col) {
+  background-color: var(--bg-page) !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+  pointer-events: none;
+}
+
+/* HC 区域表头浅蓝色 + 蓝字 */
+:deep(.budget-tree-table .ant-table-thead > tr > th.hc-header) {
+  background-color: var(--bg-header-blue) !important;
+  color: var(--primary-color) !important;
+}
+
+/* 工薪成本（万）字色 */
+:deep(.budget-tree-table .ant-table-thead > tr > th.cost-header) {
+  color: var(--status-warning) !important;
+}
+
+/* 年末目标 数据背景浅蓝色 (20%)，表头保持原色 */
+:deep(.budget-tree-table .ant-table-tbody > tr > td.target-col-bg) {
+  background-color: rgba(232, 243, 255, 0.2) !important;
+}
+:deep(.budget-tree-table .ant-table-tbody > tr:hover > td.target-col-bg) {
+  background-color: rgba(232, 243, 255, 0.4) !important;
+}
+
+/* 全年预算列头字色 */
+:deep(.budget-tree-table .ant-table-thead > tr > th.year-budget-col) {
+  color: var(--status-warning) !important;
+}
+
+/* 取消斑马纹：数据行统一白色背景 */
+:deep(.budget-tree-table .ant-table-tbody > tr > td) {
+  background-color: var(--bg-container) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 悬停 */
+:deep(.budget-tree-table .ant-table-tbody > tr:hover > td) {
+  background-color: var(--bg-hover-row) !important;
 }
 
 /* Current Month Column Emphasis */
-:deep(.current-month-cell),
-:deep(.current-month-header) {
-  /* Subtle border enhancement using inset shadow to prevent layout shifts */
-  box-shadow: inset 1px 0 0 #C9CDD4, inset -1px 0 0 #C9CDD4 !important;
-}
-
 :deep(.current-month-cell) {
-  font-weight: 600; /* Slightly bolder (+100-200) */
-  background-color: #F7F8FA; /* Subtle background highlight */
+  font-weight: 600;
+  background-color: rgba(232, 243, 255, 0.2) !important;
 }
 
 :deep(.current-month-header) {
-  background-color: #E5E6EB !important; /* Slightly darker header bg */
+  background-color: rgba(232, 243, 255, 0.2) !important;
+  color: var(--primary-color) !important;
 }
 
+</style>
+
+<style scoped>
+/* Plan 1 Visual Hierarchy */
+/* 2026 css rules moved above for higher specificity */
+
+/* 2027 css rules moved above for higher specificity */
+
+.style-plan1-enhanced :deep(.hc-header) {
+  background-color: var(--bg-header-blue) !important;
+  color: var(--primary-color) !important;
+}
+
+.style-plan1-enhanced :deep(.current-header) {
+  background-color: var(--bg-header-gray) !important;
+  color: var(--text-primary) !important;
+}
+
+.style-plan1-enhanced :deep(.target-text) {
+  color: var(--primary-color) !important;
+}
+
+.style-plan1-enhanced :deep(.module-header) {
+  background-color: inherit !important;
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+  font-size: 16px !important;
+}
+
+.style-plan1-enhanced :deep(.separator-module) {
+  border-right: 1px solid var(--border-color) !important;
+}
+
+.style-plan1-enhanced :deep(.dimension-header) {
+  color: var(--text-secondary) !important;
+  background-color: inherit !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+}
+
+.style-plan1-enhanced :deep(.separator-dimension) {
+  border-right: 1px solid var(--border-color) !important;
+}
+
+.style-plan1-enhanced :deep(.employee-type-header) {
+  position: relative;
+  padding-left: 24px !important;
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+}
+
+.style-plan1-enhanced :deep(.employee-type-header::before) {
+  content: attr(data-icon);
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+}
+
+.style-plan1-enhanced :deep(.separator-type) {
+  border-right: 1px solid var(--border-color) !important;
+}
+
+.style-plan1-enhanced :deep(.data-primary) {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-primary);
+}
+
+.style-plan1-enhanced :deep(.data-secondary) {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* 冻结列表头与单元格背景重写（防止透底），预算调整、预实比对维持白色 */
+.style-plan1-enhanced :deep(.fixed-column-bg) {
+  background-color: var(--bg-container) !important;
+}
+.style-plan1-enhanced :deep(.ant-table-tbody > tr:hover > td.fixed-column-bg) {
+  background-color: var(--bg-hover-row) !important;
+}
+
+/* 主表格不包括 budget-tree-table、pending-table，避免覆盖其独立样式 */
+.style-plan1-enhanced:not(.budget-tree-table):not(.pending-table) :deep(.ant-table-thead > tr > th),
+.style-plan1-enhanced:not(.budget-tree-table):not(.pending-table) :deep(.ant-table-tbody > tr > td.ant-table-cell) {
+  padding: 10px 16px !important;
+  box-shadow: inset 0px -1px 0px 0px var(--border-color) !important;
+  border: none !important;
+}
+
+
+.style-plan1-enhanced :deep(.action-link-btn) {
+  color: var(--primary-color) !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  text-decoration: underline !important;
+  padding: 0;
+}
+
+/* 工薪成本（万）的特殊黄色背景 */
+.style-plan1-enhanced :deep(.module-header.cost-header) {
+  background-color: var(--bg-header-yellow) !important;
+}
+.style-plan1-enhanced :deep(.cost-header-sub) {
+  background-color: var(--bg-header-yellow) !important;
+}
+
+/* Plan 2 progressive disclosure */
+.style-plan2-disclosure :deep(.ant-table-row) {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.style-plan2-disclosure :deep(.ant-table-row:hover) {
+  background-color: #F2F3F5 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.summary-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-icon {
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+.summary-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1D2129;
+}
+
+.action-col .ant-btn {
+  padding: 0 4px;
+}
+
+/* Expanded Content Area */
+:deep(.expanded-content) {
+  background: #F7F8FA;
+  padding: 16px 24px;
+  border-left: 3px solid #165DFF;
+  display: flex;
+  gap: 24px;
+}
+
+.expandable-module {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #E5E6EB;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.module-header {
+  padding: 12px 16px;
+  background: #F7F8FA;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 600;
+  user-select: none;
+}
+
+.module-content {
+  padding: 16px;
+  border-top: 1px solid #E5E6EB;
+}
+
+/* Cost Detail in Expanded Area */
+.cost-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cost-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cost-label {
+  color: #86909C;
+}
+
+.cost-value {
+  font-weight: 600;
+}
+
+.text-up {
+  color: #F53F3F;
+}
+
+.text-down {
+  color: #00B42A;
+}
+
+.text-none {
+  color: #86909c;
+}
+
+/* Plan 3 Cards */
+.card-container {
+  padding: 16px 0;
+}
+
+/* Extra safety scoped */
 </style>

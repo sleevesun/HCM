@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工薪预算驾驶舱 - PW设计稿还原 Demo</title>
+  
+  <!-- 引入 Figma 设计令牌 -->
+  <link rel="stylesheet" href="./figma.css">
+  
+  <!-- Tailwind CSS 仅用于外部容器和快捷布局 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* 基础重置与字体应用 */
+    body {
+      background-color: var(--bg-page);
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text-primary);
+      margin: 0;
+      padding: 24px;
+    }
+
+    /* 模块卡片样式 */
+    .section-card {
+      background-color: var(--bg-container);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .section-header {
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title .badge {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    /* 全局表格重置 */
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+    }
+    
+    /* 核心边距与无感边框 */
+    th, td {
+      padding: 3px 16px;
+      box-shadow: inset 0px -1px 0px 0px var(--border-color);
+      white-space: nowrap;
+    }
+    th {
+      padding: 6px 16px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    
+    /* 悬停效果 */
+    tbody tr:hover td {
+      background-color: var(--bg-hover-row);
+    }
+
+    /* 右对齐与居中 */
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    
+    /* 文本状态色 */
+    .text-primary { color: var(--primary-color); }
+    .text-red { color: var(--status-error); }
+    .text-green { color: var(--status-success); }
+    .text-orange { color: var(--status-pending); }
+    .font-bold { font-weight: 500; color: var(--text-primary); }
+    .data-secondary { color: var(--text-secondary); font-size: 14px; }
+    .data-primary { color: var(--text-primary); font-size: 14px; }
+
+    /* 按钮样式 */
+    .btn-link {
+      color: var(--primary-color);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 4px;
+    }
+    .btn-link:hover { color: var(--primary-hover); text-decoration: underline; }
+    .btn-danger { color: var(--status-error); }
+
+    /* =========================================================
+       表格 1：在途调整/编制申请 (.pending-table)
+       ========================================================= */
+    .pending-table th {
+      background-color: var(--bg-container); /* 表头默认底色白色/透明 */
+      color: var(--text-primary);
+    }
+    
+    /* “申请通过后” 高亮列 */
+    .pending-table th.post-col {
+      background-color: var(--bg-header-blue);
+      color: var(--primary-color);
+    }
+    .pending-table td.post-col {
+      /* background-color: #FAFDFF; 去除背景色，图片中单元格没有底色 */
+      color: var(--primary-color);
+    }
+    
+    /* 垂直分割线 */
+    .pending-table th.border-r,
+    .pending-table td.border-r {
+      box-shadow: inset -1px -1px 0px 0px var(--border-color);
+    }
+
+    /* =========================================================
+       表格 2：当前工薪执行现状及现行规划 (.budget-tree-table)
+       ========================================================= */
+    .budget-tree-table th.year-2026 {
+      background-color: var(--primary-color); /* 2026年为深蓝色背景 */
+      font-size: 18px;
+      color: #FFFFFF;
+      text-align: center;
+    }
+    .budget-tree-table th.year-2027 {
+      background-color: var(--bg-header-gray);
+      font-size: 14px;
+      color: var(--text-primary);
+      text-align: center;
+    }
+    .budget-tree-table th.module-header {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-align: center;
+    }
+    /* HC 模块表头浅蓝背景，蓝色文字 */
+    .budget-tree-table th.hc-header {
+      background-color: var(--bg-header-blue);
+      color: var(--primary-color);
+    }
+    /* 工薪成本 模块表头浅黄背景 */
+    .budget-tree-table th.cost-header {
+      background-color: var(--bg-header-yellow);
+      color: var(--text-primary);
+    }
+    /* 当前 模块表头浅灰背景 */
+    .budget-tree-table th.current-header {
+      background-color: var(--bg-header-gray);
+      color: var(--text-primary);
+    }
+    .budget-tree-table th.dimension-header {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    
+    /* 年末目标列蓝色字体 */
+    .target-text {
+      color: var(--primary-color) !important;
+    }
+    
+    /* 冻结列模拟 */
+    .freeze-col {
+      position: sticky;
+      left: 0;
+      background-color: var(--bg-container);
+      z-index: 10;
+      box-shadow: inset -1px -1px 0px 0px var(--border-color);
+    }
+    th.freeze-col {
+      background-color: var(--bg-container);
+    }
+    
+    /* 图标占位 */
+    .icon {
+      display: inline-block;
+      width: 14px;
+      text-align: center;
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================
+       模块 1：在途调整/编制申请
+       ========================================================= -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-title">
+        在途调整/编制申请 <span class="badge">(2)</span>
+      </div>
+      <div class="flex gap-4 text-sm text-blue-600">
+        <button class="hover:underline">一键折叠</button>
+        <button class="hover:underline">一键展开</button>
+      </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table class="pending-table">
+        <thead>
+          <tr>
+            <th rowspan="3" class="border-r text-center">申请类型</th>
+            <th rowspan="3" class="border-r text-center">申请部门</th>
+            <th colspan="6" class="border-r text-center">HC</th>
+            <th colspan="3" class="border-r text-center">月度工薪预算 (万)</th>
+            <th colspan="3" class="border-r text-center">年度工薪预算 (万)</th>
+            <th rowspan="3" class="text-center w-24">操作</th>
+          </tr>
+          <tr>
+            <th colspan="2" class="border-r text-center">申请前</th>
+            <th colspan="2" class="post-col border-r text-center">申请通过后 <span class="text-xs font-normal">ⓘ</span></th>
+            <th colspan="2" class="border-r text-center">变化 <span class="text-xs font-normal">ⓘ</span></th>
+            <th rowspan="2" class="text-right">申请前</th>
+            <th rowspan="2" class="post-col text-right">申请通过后 <span class="text-xs font-normal">ⓘ</span></th>
+            <th rowspan="2" class="border-r text-right">变化 <span class="text-xs font-normal">ⓘ</span></th>
+            <th rowspan="2" class="text-right">申请前</th>
+            <th rowspan="2" class="post-col text-right">申请通过后 <span class="text-xs font-normal">ⓘ</span></th>
+            <th rowspan="2" class="border-r text-right">变化 <span class="text-xs font-normal">ⓘ</span></th>
+          </tr>
+          <tr>
+            <th class="text-right">正编</th>
+            <th class="border-r text-right">其他人员</th>
+            <th class="post-col text-right">正编</th>
+            <th class="post-col border-r text-right">其他人员</th>
+            <th class="text-right">正编</th>
+            <th class="border-r text-right">其他人员</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 远景工作室 -->
+          <tr>
+            <td rowspan="3" class="border-r font-bold align-top pt-2">
+              <span class="inline-block w-4 h-4 text-center border border-gray-300 rounded text-xs mr-1 text-gray-500 leading-none">+</span>
+              2026年预算调整
+            </td>
+            <td class="border-r font-bold">游戏工作室群/幻塔工作室</td>
+            <td class="text-right">447</td>
+            <td class="border-r text-right">452</td>
+            <td class="post-col text-right">3</td>
+            <td class="post-col border-r text-right">3</td>
+            <td class="text-right">-</td>
+            <td class="border-r text-right">-</td>
+            <td class="text-right">2,981.6</td>
+            <td class="post-col text-right">2997.3</td>
+            <td class="border-r text-right text-red">+15.7</td>
+            <td class="text-right">35,779.8</td>
+            <td class="post-col text-right">35,779.8</td>
+            <td class="border-r text-right text-red">+164.7</td>
+            <td class="text-center">
+              <button class="btn-link">去审批</button>
+            </td>
+          </tr>
+          <tr>
+            <td class="border-r font-bold pl-8">集团发展部/信息技术支持部（IT）</td>
+            <td class="text-right">12</td>
+            <td class="border-r text-right">11</td>
+            <td class="post-col text-right">11</td>
+            <td class="post-col border-r text-right">11</td>
+            <td class="text-right text-green">-1</td>
+            <td class="border-r text-right">-</td>
+            <td class="text-right">45.8</td>
+            <td class="post-col text-right">44.0</td>
+            <td class="border-r text-right text-green">-1.7</td>
+            <td class="text-right">547.2</td>
+            <td class="post-col text-right">524.4</td>
+            <td class="border-r text-right text-green">-19.8</td>
+            <td class="text-center">
+              <button class="btn-link">去审批</button>
+            </td>
+          </tr>
+          <tr>
+            <td class="border-r font-bold pl-8">集团发展部/综合办</td>
+            <td class="text-right">3</td>
+            <td class="border-r text-right">3</td>
+            <td class="post-col text-right">11</td>
+            <td class="post-col border-r text-right">11</td>
+            <td class="text-right">-</td>
+            <td class="border-r text-right">-</td>
+            <td class="text-right">82.6</td>
+            <td class="post-col text-right">7.0</td>
+            <td class="border-r text-right text-green">-75.6</td>
+            <td class="text-right">990.8</td>
+            <td class="post-col text-right">86.2</td>
+            <td class="border-r text-right text-green">-904.6</td>
+            <td class="text-center">
+              <button class="btn-link">去审批</button>
+            </td>
+          </tr>
+          
+          <!-- 完美世界 -->
+          <tr>
+            <td class="border-r font-bold">
+              <span class="inline-block w-4 h-4 text-center border border-gray-300 rounded text-xs mr-1 text-gray-500 leading-none">+</span>
+              2026年预算调整
+            </td>
+            <td class="border-r font-bold">后勤职能/集团财务中心</td>
+            <td class="text-right">16</td>
+            <td class="border-r text-right">18</td>
+            <td class="post-col text-right">0</td>
+            <td class="post-col border-r text-right">0</td>
+            <td class="text-right text-red">+2</td>
+            <td class="border-r text-right">-</td>
+            <td class="text-right">110.0</td>
+            <td class="post-col text-right">118.0</td>
+            <td class="border-r text-right text-red">+8.0</td>
+            <td class="text-right">1317.5</td>
+            <td class="post-col text-right">1381.3</td>
+            <td class="border-r text-right text-red">+63.8</td>
+            <td class="text-center">
+              <button class="btn-link">去提交</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       模块 2：当前工薪执行现状及现行规划
+       ========================================================= -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-title">当前工薪执行现状及现行规划</div>
+      <div class="flex gap-4 text-sm text-blue-600">
+        <button class="hover:underline">一键折叠</button>
+        <button class="hover:underline">一键展开</button>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="budget-tree-table">
+        <thead>
+          <tr>
+            <th rowspan="4" class="freeze-col w-48">部门</th>
+            <th colspan="12" class="year-2026 border-r">2026年</th>
+            <th rowspan="4" class="year-2027 border-r w-24">预算编制</th>
+          </tr>
+          <tr>
+            <th rowspan="3" class="dimension-header text-center border-r">预算调整</th>
+            <th rowspan="3" class="dimension-header text-center border-r">预实比对</th>
+            <th colspan="8" class="module-header hc-header border-r text-center">HC</th>
+            <th colspan="2" class="module-header cost-header border-r text-center">工薪成本 (万)</th>
+          </tr>
+          <tr>
+            <th colspan="4" class="dimension-header current-header text-center border-r">当前</th>
+            <th colspan="4" class="dimension-header target-text text-center border-r cursor-pointer">年末目标</th>
+            <th rowspan="2" class="dimension-header cost-header text-right border-r">累计已发生</th>
+            <th rowspan="2" class="dimension-header cost-header text-right border-r">全年合计</th>
+          </tr>
+          <tr>
+            <th class="text-right font-normal text-gray-500 border-r border-dashed target-text"><span class="icon">👤</span>正编</th>
+            <th class="text-right font-normal text-gray-500 border-r border-dashed target-text"><span class="icon">🎓</span>实习</th>
+            <th class="text-right font-normal text-gray-500 border-r border-dashed target-text"><span class="icon">🔄</span>劳务派遣</th>
+            <th class="text-right font-normal text-gray-500 border-r target-text"><span class="icon">📦</span>人力外包</th>
+            
+            <th class="text-right font-normal text-gray-500 border-r border-dashed"><span class="icon">👤</span>正编</th>
+            <th class="text-right font-normal text-gray-500 border-r border-dashed"><span class="icon">🎓</span>实习</th>
+            <th class="text-right font-normal text-gray-500 border-r border-dashed"><span class="icon">🔄</span>劳务派遣</th>
+            <th class="text-right font-normal text-gray-500 border-r"><span class="icon">📦</span>人力外包</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 完美世界 -->
+          <tr>
+            <td class="freeze-col font-bold">
+              <span class="inline-block w-4 h-4 text-center border border-gray-300 rounded text-xs mr-1 text-gray-500 leading-none">-</span>
+              完美世界
+            </td>
+            <td class="text-center border-r"><button class="btn-link">✎</button></td>
+            <td class="text-center border-r"><button class="btn-link">查看</button></td>
+            
+            <!-- 当前 -->
+            <td class="text-right border-r border-dashed data-secondary">-</td>
+            <td class="text-right border-r border-dashed data-secondary">-</td>
+            <td class="text-right border-r border-dashed data-secondary">-</td>
+            <td class="text-right border-r data-secondary">-</td>
+            
+            <!-- 年末目标 -->
+            <td class="text-right border-r border-dashed target-text font-medium">-</td>
+            <td class="text-right border-r border-dashed target-text font-medium">-</td>
+            <td class="text-right border-r border-dashed target-text font-medium">-</td>
+            <td class="text-right border-r target-text font-medium">-</td>
+            
+            <!-- 成本 -->
+            <td class="text-right border-r data-secondary">-</td>
+            <td class="text-right border-r text-red font-medium">-</td>
+            
+            <td class="text-center border-r text-gray-400">操作</td>
+          </tr>
+          
+          <!-- 游戏业务 -->
+          <tr>
+            <td class="freeze-col pl-8">
+              <span class="inline-block w-4 h-4 text-center border border-gray-300 rounded text-xs mr-1 text-gray-500 leading-none">+</span>
+              游戏业务
+            </td>
+            <td class="text-center border-r"><button class="btn-link">✎</button></td>
+            <td class="text-center border-r"><button class="btn-link">查看</button></td>
+            
+            <td class="text-right border-r border-dashed data-secondary">2,696</td>
+            <td class="text-right border-r border-dashed data-secondary">59</td>
+            <td class="text-right border-r border-dashed data-secondary">13</td>
+            <td class="text-right border-r data-secondary">120</td>
+            
+            <td class="text-right border-r border-dashed target-text font-medium">2,696</td>
+            <td class="text-right border-r border-dashed target-text font-medium">2,696</td>
+            <td class="text-right border-r border-dashed target-text font-medium">14</td>
+            <td class="text-right border-r target-text font-medium">98</td>
+            
+            <td class="text-right border-r data-secondary">10.1</td>
+            <td class="text-right border-r text-red font-medium">275,000.3</td>
+            
+            <td class="text-center border-r text-gray-400">操作</td>
+          </tr>
+          
+          <!-- 电竞与平台业务 -->
+          <tr>
+            <td class="freeze-col pl-8">
+              <span class="inline-block w-4 h-4 text-center border border-gray-300 rounded text-xs mr-1 text-gray-500 leading-none">-</span>
+              电竞与平台业务
+            </td>
+            <td class="text-center border-r"><button class="btn-link">✎</button></td>
+            <td class="text-center border-r"><button class="btn-link">查看</button></td>
+            
+            <td class="text-right border-r border-dashed data-secondary">258</td>
+            <td class="text-right border-r border-dashed data-secondary">1</td>
+            <td class="text-right border-r border-dashed data-secondary">28</td>
+            <td class="text-right border-r data-secondary">-</td>
+            
+            <td class="text-right border-r border-dashed target-text font-medium">258</td>
+            <td class="text-right border-r border-dashed target-text font-medium">258</td>
+            <td class="text-right border-r border-dashed target-text font-medium">29</td>
+            <td class="text-right border-r target-text font-medium">-</td>
+            
+            <td class="text-right border-r data-secondary">-</td>
+            <td class="text-right border-r text-red font-medium">23,840.0</td>
+            
+            <td class="text-center border-r text-gray-400">操作</td>
+          </tr>
+          
+          <!-- Steam CN -->
+          <tr>
+            <td class="freeze-col pl-12 text-gray-600">
+              <span class="inline-block w-4 h-4 text-center border border-gray-300 rounded text-xs mr-1 text-gray-500 leading-none">-</span>
+              Steam CN
+            </td>
+            <td class="text-center border-r"><button class="btn-link">✎</button></td>
+            <td class="text-center border-r"><button class="btn-link">查看</button></td>
+            
+            <td class="text-right border-r border-dashed data-secondary">258</td>
+            <td class="text-right border-r border-dashed data-secondary">1</td>
+            <td class="text-right border-r border-dashed data-secondary">28</td>
+            <td class="text-right border-r data-secondary">-</td>
+            
+            <td class="text-right border-r border-dashed target-text font-medium">258</td>
+            <td class="text-right border-r border-dashed target-text font-medium">258</td>
+            <td class="text-right border-r border-dashed target-text font-medium">29</td>
+            <td class="text-right border-r target-text font-medium">-</td>
+            
+            <td class="text-right border-r data-secondary">-</td>
+            <td class="text-right border-r text-red font-medium">23,840.0</td>
+            
+            <td class="text-center border-r text-gray-400">操作</td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -61,6 +61,26 @@
       <!-- Action Footer -->
       <div class="page-footer">
         <a-button>返回</a-button>
+        <a-dropdown placement="topRight">
+          <a-button type="default" style="margin-right: 16px; margin-left: auto;">
+            <template #icon><export-outlined /></template>
+            导出报表
+          </a-button>
+          <template #overlay>
+            <a-menu>
+              <a-sub-menu title="导出现状">
+                <a-menu-item key="current-dept" @click="handleExport('current', 'dept')">部门预算报表</a-menu-item>
+                <a-menu-item key="current-proj" @click="handleExport('current', 'proj')">项目预算报表</a-menu-item>
+                <a-menu-item key="current-hc" @click="handleExport('current', 'hc')">HC 预算报表</a-menu-item>
+              </a-sub-menu>
+              <a-sub-menu title="导出申请后">
+                <a-menu-item key="draft-dept" @click="handleExport('draft', 'dept')">部门预算报表</a-menu-item>
+                <a-menu-item key="draft-proj" @click="handleExport('draft', 'proj')">项目预算报表</a-menu-item>
+                <a-menu-item key="draft-hc" @click="handleExport('draft', 'hc')">HC 预算报表</a-menu-item>
+              </a-sub-menu>
+            </a-menu>
+          </template>
+        </a-dropdown>
         <a-button type="primary" class="submit-btn">创建审批单</a-button>
       </div>
     </div>
@@ -414,6 +434,7 @@ import { computed, ref, nextTick } from "vue";
 import {
   AppstoreOutlined,
   DownloadOutlined,
+  ExportOutlined,
   ImportOutlined,
   PlusOutlined
 } from "@ant-design/icons-vue";
@@ -433,6 +454,15 @@ import {
 } from "../mocks/budgetData";
 
 import { message } from 'ant-design-vue';
+
+const handleExport = (version: string, type: string) => {
+  const versionText = version === 'current' ? '现状' : '申请后'
+  const typeText = type === 'dept' ? '部门' : type === 'proj' ? '项目' : 'HC'
+  message.loading(`正在生成 [${versionText}]${typeText}预算报表...`, 2)
+  setTimeout(() => {
+    message.success(`[${versionText}]${typeText}预算报表 导出成功`)
+  }, 2000)
+}
 
 interface TransitionHCRow {
   id: string;

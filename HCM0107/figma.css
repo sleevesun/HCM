@@ -1,0 +1,38 @@
+/* Figma Design System Colors - Extracted from PW设计稿 */
+:root {
+  /* ================= 主色调 Primary ================= */
+  --primary-color: #0860BD;          /* 主题蓝 - 用于强调文字、链接、关键按钮 */
+  --primary-hover: #064B9A;          /* 交互态 - 悬停 */
+  --primary-active: #043875;         /* 交互态 - 激活 */
+
+  /* ================= 辅助色 Secondary =============== */
+  --bg-page: #F5F5F5;                /* 页面大背景 */
+  --bg-container: #FFFFFF;           /* 容器/卡片背景 */
+  --bg-header-gray: #FAFBFC;         /* 表头浅灰背景 - 用于常规维度和2026年 */
+  --bg-header-blue: #E8F3FF;         /* 表头浅蓝背景 - 用于2027年规划 */
+  --bg-header-yellow: #FFFBED;       /* 表头浅黄背景 - 用于工薪成本区域 */
+  --bg-hover-row: #F2F3F5;           /* 表格行悬停背景色 */
+
+  /* ================= 文本色 Text ==================== */
+  --text-primary: #12171F;           /* 一级文本 - 标题、主数据 */
+  --text-secondary: #5C636F;         /* 二级文本 - 表头、次级数据 */
+  --text-tertiary: #8C93A0;          /* 三级文本 - 辅助说明 */
+  --text-inverse: #FFFFFF;           /* 反色文本 - 深色背景上的文字 */
+
+  /* ================= 状态色/强调色 Status =========== */
+  --status-success: #008A00;         /* 成功/减少 - 绿色（如：HC减少、预算结余），调整为008A00以满足WCAG AA 4.5:1对比度 */
+  --status-error: #E70000;           /* 错误/增加 - 红色（如：HC增加、超预算） */
+  --status-warning: #A95823;         /* 警告/成本 - 橙棕色（如：工薪成本数值） */
+  --status-pending: #898A8C;         /* 待处理 - 灰色（如：审批中状态） */
+
+  /* ================= 边框/分割线 Border ============= */
+  --border-color: #E5E9F0;           /* 基础分割线颜色 */
+  --border-light: #F2F3F5;           /* 极浅分割线 */
+}
+
+/* ================= 字体排版 Typography ============= */
+.font-h1 { font-size: 18px; font-weight: 500; line-height: 26px; }
+.font-h2 { font-size: 16px; font-weight: 600; line-height: 26px; }
+.font-body-bold { font-size: 14px; font-weight: 500; line-height: 22px; }
+.font-body { font-size: 14px; font-weight: 400; line-height: 22px; }
+.font-small { font-size: 12px; font-weight: 400; line-height: 20px; }

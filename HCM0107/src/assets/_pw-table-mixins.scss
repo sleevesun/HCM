@@ -1,0 +1,83 @@
+/* PW Design System - Table SCSS Mixins
+   该文件提供了将 Figma CSS 变量转化为可复用的 SCSS mixin，
+   便于在支持 SASS/SCSS 的项目中快速统一表格样式。
+*/
+
+@mixin pw-table-base {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  
+  /* 基础字体规范 */
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+@mixin pw-table-cell {
+  /* 极致紧凑的内边距，取消实体边框改用内阴影 */
+  padding: 3px 16px;
+  box-shadow: inset 0px -1px 0px 0px var(--border-color);
+  white-space: nowrap;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+}
+
+@mixin pw-table-header-cell {
+  @include pw-table-cell;
+  padding: 6px 16px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* 斑马纹/奇偶行与悬停效果 */
+@mixin pw-table-rows {
+  tbody tr {
+    /* 如果需要严格奇偶行（Figma中未强调，通常以hover为主） */
+    /* &:nth-child(even) td { background-color: var(--bg-page); } */
+    
+    &:hover td {
+      background-color: var(--bg-hover-row) !important;
+    }
+  }
+}
+
+/* 表头分类背景色 Mixin */
+@mixin pw-th-theme-primary {
+  background-color: var(--primary-color) !important;
+  color: #FFFFFF !important;
+  font-size: 18px;
+}
+
+@mixin pw-th-theme-gray {
+  background-color: var(--bg-header-gray) !important;
+  color: var(--text-primary) !important;
+}
+
+@mixin pw-th-theme-blue {
+  background-color: var(--bg-header-blue) !important;
+  color: var(--primary-color) !important;
+}
+
+@mixin pw-th-theme-yellow {
+  background-color: var(--bg-header-yellow) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 完整表格组件应用示例 */
+@mixin pw-data-table {
+  @include pw-table-base;
+  
+  th {
+    @include pw-table-header-cell;
+    /* 默认表头底色 */
+    background-color: var(--bg-header-gray);
+  }
+  
+  td {
+    @include pw-table-cell;
+  }
+  
+  @include pw-table-rows;
+}
